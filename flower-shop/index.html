@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>小花店物语 · 包花小游戏</title>
+<meta name="description" content="经营一家小花店：看懂客人的需求，挑花、选包装纸，在客人等不及之前把花束包好。" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💐</text></svg>" />
+<style>
+  :root {
+    --ink: #3b2f2a;
+    --sub: #8f8079;
+    --bg: #fbf3ee;
+    --paper: #fffaf6;
+    --line: #eedfd5;
+    --red: #e25b4f;
+    --green: #6aa57b;
+    --gold: #f2b544;
+    --r: 16px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    color: var(--ink);
+    background: var(--bg) radial-gradient(circle at 15% 0%, #fde2d6 0, transparent 40%) no-repeat;
+  }
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
+  .game { max-width: 460px; margin: 0 auto; padding: 10px 12px 20px; }
+
+  .topbar { display: flex; align-items: center; gap: 8px; }
+  .day { font-weight: 900; font-size: 18px; white-space: nowrap; }
+  .timebar { flex: 1; height: 10px; border-radius: 99px; background: #f0e2d9; overflow: hidden; position: relative; }
+  .timebar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #f7c56a, #f08a5d); border-radius: 99px; transition: width .25s linear; }
+  .stat { font-size: 13px; font-weight: 700; background: var(--paper); border: 1px solid var(--line); border-radius: 99px; padding: 4px 9px; white-space: nowrap; }
+  .stat.coin b { color: #c98a12; }
+  .icon-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--paper); border: 1px solid var(--line); font-size: 14px; flex: none; }
+  .goal { font-size: 11px; color: var(--sub); margin: 6px 2px 0; display: flex; justify-content: space-between; }
+
+  .street {
+    margin-top: 10px; border-radius: var(--r); padding: 10px;
+    background: linear-gradient(180deg, #dcefe6 0%, #f4efe4 70%);
+    border: 1px solid #e3e6d8; position: relative; min-height: 148px;
+  }
+  .awning { position: absolute; left: 0; right: 0; top: 0; height: 14px; border-radius: var(--r) var(--r) 0 0; overflow: hidden;
+    background: repeating-linear-gradient(90deg, #e9776b 0 22px, #fff6ef 22px 44px); }
+  .awning::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 12px;
+    background: radial-gradient(circle at 11px 0, #e9776b 10px, transparent 11px) 0 0 / 44px 12px repeat-x; }
+  .queue { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+  .slot { min-height: 124px; border-radius: 14px; border: 2px dashed rgba(143, 128, 121, .25); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--sub); }
+  .cust {
+    position: relative; background: var(--paper); border-radius: 14px; padding: 6px 6px 8px; text-align: center;
+    border: 2px solid transparent; box-shadow: 0 3px 10px rgba(90, 60, 40, .08); animation: walkin .4s ease-out;
+  }
+  .cust.sel { border-color: var(--red); box-shadow: 0 4px 14px rgba(226, 91, 79, .25); }
+  .cust.leaving { animation: walkout .35s ease-in forwards; }
+  @keyframes walkin { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes walkout { to { transform: translateY(-10px) scale(.9); opacity: 0; } }
+  .cust svg.face { width: 46px; height: 46px; display: block; margin: 0 auto; }
+  .cust .name { font-size: 11px; font-weight: 700; margin-top: 1px; }
+  .cust .occ { font-size: 10px; color: var(--sub); }
+  .patience { height: 5px; border-radius: 99px; background: #f0e2d9; margin: 4px 2px; overflow: hidden; }
+  .patience i { display: block; height: 100%; border-radius: 99px; transition: width .25s linear, background .3s; }
+  .mini-order { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; }
+  .mini-order span { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; background: #f7eee8; border-radius: 6px; padding: 0 3px 0 1px; }
+  .mini-order svg { width: 16px; height: 16px; }
+  .mini-order .wrap-dot { width: 12px; height: 12px; border-radius: 3px; margin: 2px; border: 1px solid rgba(0,0,0,.12); padding: 0; }
+
+  .bubble {
+    margin-top: 10px; background: var(--paper); border-radius: 14px; padding: 9px 12px; font-size: 13px; line-height: 1.55;
+    border: 1px solid var(--line); position: relative; min-height: 42px;
+  }
+  .bubble::before { content: ""; position: absolute; top: -7px; left: var(--tail, 16%); width: 12px; height: 12px; background: var(--paper); border-left: 1px solid var(--line); border-top: 1px solid var(--line); transform: rotate(45deg); }
+  .bubble b { color: var(--red); }
+  .bubble .muted { color: var(--sub); }
+
+  .bench { display: grid; grid-template-columns: 1fr 118px; gap: 10px; margin-top: 10px; }
+  .bouquet { background: var(--paper); border-radius: var(--r); border: 1px solid var(--line); position: relative; aspect-ratio: 1 / 1; }
+  .bouquet svg { width: 100%; height: 100%; display: block; }
+  .bouquet .head { cursor: pointer; }
+  .bouquet .count { position: absolute; left: 8px; top: 6px; font-size: 11px; color: var(--sub); }
+  .bouquet .hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12px; color: var(--sub); padding: 30px; pointer-events: none; }
+  .side { display: flex; flex-direction: column; gap: 8px; }
+  .side h4 { margin: 0; font-size: 12px; color: var(--sub); font-weight: 600; }
+  .wraps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .wrap { aspect-ratio: 1; border-radius: 10px; border: 2px solid transparent; position: relative; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+  .wrap.on { border-color: var(--ink); }
+  .wrap.locked { opacity: .35; }
+  .wrap.locked::after { content: "🔒"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .wrap-name { font-size: 11px; color: var(--ink); text-align: center; margin-top: -2px; }
+  .btn { height: 42px; border-radius: 12px; font-weight: 800; font-size: 15px; }
+  .btn.primary { background: var(--red); color: #fff; box-shadow: 0 4px 12px rgba(226, 91, 79, .3); }
+  .btn.primary:disabled { background: #d6c8c1; box-shadow: none; }
+  .btn.ghost { background: var(--paper); border: 1px solid var(--line); font-size: 13px; height: 34px; }
+
+  .shelf { margin-top: 10px; background: #f3e4d8; border-radius: var(--r); padding: 10px; }
+  .shelf-head { display: flex; justify-content: space-between; font-size: 12px; color: var(--sub); margin-bottom: 8px; }
+  .flowers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+  .fl { background: var(--paper); border-radius: 12px; padding: 5px 2px 4px; text-align: center; position: relative; box-shadow: 0 2px 0 #e2cfc1; }
+  .fl:active:not(.out):not(.locked) { transform: translateY(2px); box-shadow: none; }
+  .fl svg { width: 42px; height: 42px; display: block; margin: 0 auto; }
+  .fl .fn { font-size: 11px; font-weight: 700; }
+  .fl .st { font-size: 10px; color: var(--sub); }
+  .fl.out svg, .fl.out .fn { opacity: .35; }
+  .fl.locked { background: #efe3da; box-shadow: none; }
+  .fl.locked svg { filter: grayscale(1); opacity: .3; }
+  .fl .restock { display: block; width: calc(100% - 6px); margin: 3px auto 0; font-size: 10px; font-weight: 700; padding: 2px 0; border-radius: 6px; background: #fdecd0; color: #a8730c; }
+  .fl .restock:disabled { opacity: .45; }
+
+  .toast-layer { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
+  .toast { position: absolute; left: 50%; top: 38%; transform: translateX(-50%); background: rgba(59, 47, 42, .9); color: #fff; padding: 10px 16px; border-radius: 14px; font-weight: 800; font-size: 15px; text-align: center; white-space: nowrap; animation: floatup 1.6s ease-out forwards; }
+  .toast small { display: block; font-size: 11px; font-weight: 500; opacity: .85; margin-top: 2px; }
+  @keyframes floatup { 0% { opacity: 0; transform: translate(-50%, 10px) scale(.9); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -40px); } }
+
+  .modal { position: fixed; inset: 0; z-index: 50; background: rgba(50, 36, 30, .55); display: none; align-items: center; justify-content: center; padding: 18px; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  .modal.show { display: flex; }
+  .card { background: var(--paper); border-radius: 22px; width: 100%; max-width: 380px; max-height: calc(100vh - 36px); overflow-y: auto; padding: 20px 18px 18px; animation: pop .35s cubic-bezier(.2, .9, .3, 1.25); }
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+  .card h2 { margin: 0 0 4px; font-size: 22px; text-align: center; }
+  .card .lead { text-align: center; color: var(--sub); font-size: 13px; margin: 0 0 14px; }
+  .card .hero-svg { width: 150px; height: 150px; display: block; margin: 0 auto 6px; }
+  .rules { margin: 0 0 16px; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .rules li { font-size: 13px; line-height: 1.55; display: flex; gap: 8px; }
+  .rules li b { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--red); color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .summary div { background: #f7eee8; border-radius: 12px; padding: 10px 4px; text-align: center; font-size: 11px; color: var(--sub); }
+  .summary div b { display: block; font-size: 18px; color: var(--ink); }
+  .upgrades { display: grid; gap: 8px; margin-bottom: 14px; }
+  .up { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 10px; text-align: left; }
+  .up .em { font-size: 26px; width: 36px; text-align: center; flex: none; }
+  .up .tx { flex: 1; min-width: 0; }
+  .up .tx b { font-size: 14px; display: block; }
+  .up .tx small { font-size: 11px; color: var(--sub); }
+  .up .price { flex: none; font-size: 12px; font-weight: 800; padding: 6px 10px; border-radius: 99px; background: #fdecd0; color: #a8730c; }
+  .up.owned { opacity: .6; }
+  .up.owned .price { background: #e3f1e6; color: var(--green); }
+  .up:disabled:not(.owned) .price { opacity: .5; }
+  .unlock-note { background: #fff3ea; border-radius: 12px; padding: 9px 12px; font-size: 12px; margin-bottom: 14px; line-height: 1.6; }
+  .row-btns { display: flex; gap: 8px; }
+  .row-btns .btn { flex: 1; }
+  .card .btn.primary { width: 100%; }
+  .footer { text-align: center; font-size: 11px; color: var(--sub); margin-top: 14px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cust, .card, .toast { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="game">
+  <div class="topbar">
+    <div class="day" id="dayLabel">第 1 天</div>
+    <div class="timebar" aria-label="营业时间"><i id="timeFill" style="width:100%"></i></div>
+    <div class="stat coin">¥<b id="coins">0</b></div>
+    <div class="stat" id="rep">★ -</div>
+    <button class="icon-btn" id="pauseBtn" aria-label="暂停">⏸</button>
+  </div>
+  <div class="goal"><span id="goalText"></span><span id="servedText"></span></div>
+
+  <section class="street">
+    <div class="awning"></div>
+    <div class="queue" id="queue"></div>
+  </section>
+
+  <div class="bubble" id="bubble"></div>
+
+  <section class="bench">
+    <div class="bouquet" id="bouquet"></div>
+    <div class="side">
+      <h4>包装纸</h4>
+      <div class="wraps" id="wraps"></div>
+      <div class="wrap-name" id="wrapName"></div>
+      <button class="btn ghost" id="clearBtn">清空重包</button>
+      <button class="btn primary" id="serveBtn" disabled>包好送出</button>
+    </div>
+  </section>
+
+  <section class="shelf">
+    <div class="shelf-head"><span>花架 · 点花加进花束，点花束里的花可以拿出来</span></div>
+    <div class="flowers" id="shelf"></div>
+  </section>
+
+  <p class="footer">进度自动保存在本机浏览器 · <button id="resetBtn" style="text-decoration:underline;color:inherit;font-size:11px">重新开店</button></p>
+</div>
+
+<div class="toast-layer" id="toasts"></div>
+<div class="modal" id="modal"><div class="card" id="modalCard"></div></div>
+
+<script>
+const FLOWERS = {
+  rose:      { name: "玫瑰",   unit: "枝", price: 12, cost: 5, day: 1 },
+  tulip:     { name: "郁金香", unit: "枝", price: 10, cost: 4, day: 1 },
+  daisy:     { name: "雏菊",   unit: "枝", price: 6,  cost: 2, day: 1 },
+  baby:      { name: "满天星", unit: "把", price: 5,  cost: 2, day: 1 },
+  sunflower: { name: "向日葵", unit: "枝", price: 15, cost: 6, day: 2 },
+  lavender:  { name: "薰衣草", unit: "把", price: 8,  cost: 3, day: 3 },
+  hydrangea: { name: "绣球",   unit: "朵", price: 18, cost: 7, day: 3 },
+  lily:      { name: "百合",   unit: "枝", price: 16, cost: 6, day: 4 }
+};
+const WRAPS = {
+  kraft: { name: "牛皮纸", color: "#cfa57c", fold: "#b88b60", day: 1 },
+  pink:  { name: "樱花粉", color: "#f6c3c8", fold: "#e9a3ab", day: 1 },
+  white: { name: "奶油白", color: "#f3eee6", fold: "#ddd3c6", day: 1 },
+  blue:  { name: "雾霾蓝", color: "#b7cbe3", fold: "#93acc9", day: 2 },
+  black: { name: "高级黑", color: "#3d3532", fold: "#262120", day: 3 },
+  green: { name: "薄荷绿", color: "#bfe0cd", fold: "#97c5aa", day: 4 }
+};
+const OCCASIONS = [
+  { tag: "生日",   lines: ["朋友今天生日", "明天闺蜜过生日", "给妈妈过生日"], fav: ["rose", "tulip", "sunflower", "hydrangea"], wraps: ["pink", "kraft", "white"] },
+  { tag: "表白",   lines: ["今晚准备表白", "想送给喜欢的人"], fav: ["rose", "tulip"], wraps: ["pink", "black", "white"] },
+  { tag: "探病",   lines: ["去医院看奶奶", "同事住院了"], fav: ["daisy", "sunflower", "lily"], wraps: ["kraft", "white", "blue", "green"] },
+  { tag: "毕业",   lines: ["室友今天毕业", "女儿毕业典礼"], fav: ["sunflower", "daisy", "hydrangea"], wraps: ["kraft", "blue", "green"] },
+  { tag: "纪念日", lines: ["结婚纪念日", "在一起一周年啦"], fav: ["rose", "lily", "lavender"], wraps: ["black", "pink", "white"] },
+  { tag: "道歉",   lines: ["惹女朋友生气了", "跟好朋友吵架了"], fav: ["tulip", "lavender", "hydrangea"], wraps: ["blue", "pink", "white"] },
+  { tag: "犒劳自己", lines: ["今天下班早，想犒劳一下自己", "给新家添点颜色"], fav: ["tulip", "daisy", "lavender", "hydrangea"], wraps: ["kraft", "white", "green"] }
+];
+const NAMES = ["小林", "阿杰", "糖糖", "周周", "大雄", "七七", "老王", "小鹿", "安安", "阿哲", "米粒", "陈姐", "豆豆", "星星", "小满", "阿泽"];
+const HAIR = ["#2b211d", "#4a3328", "#6b4a35", "#1f1a1a", "#8a5a3c", "#3a2a40"];
+const SHIRT = ["#f2a7a0", "#9fc5e8", "#b6d7a8", "#ffe599", "#d5a6bd", "#f9cb9c"];
+const UPGRADES = [
+  { id: "chair",  em: "🪑", name: "软软的等候椅", desc: "客人耐心 +35%", cost: 60 },
+  { id: "bucket", em: "🪣", name: "大号花桶", desc: "每次进货 +8（原来 +5）", cost: 70 },
+  { id: "bell",   em: "🔔", name: "门口风铃", desc: "客人来得更勤", cost: 80 },
+  { id: "window", em: "🪟", name: "花艺橱窗", desc: "小费 +60%", cost: 100 }
+];
+const DAY_SECONDS = 100;
+const GOAL = 1500;
+const SAVE_KEY = "flower-shop-save-v1";
+
+/* ---------- 绘图 ---------- */
+function flowerSvg(type, x, y, s = 1) {
+  const g = (inner) => `<g transform="translate(${x} ${y}) scale(${s})">${inner}</g>`;
+  switch (type) {
+    case "rose":
+      return g(`<circle r="11" fill="#e04a4a"/><circle r="8" fill="#c93a3d"/>
+        <path d="M-5 -1 Q0 -8 5 -1 Q2 5 -3 2 Q-2 -2 2 -1" fill="none" stroke="#a52a30" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M-11 2 Q-6 9 0 10 Q6 9 11 2" fill="none" stroke="#f06b66" stroke-width="1.5"/>`);
+    case "tulip":
+      return g(`<path d="M-9 -6 Q-10 8 0 10 Q10 8 9 -6 L5 -1 L0 -9 L-5 -1 Z" fill="#f28db2"/>
+        <path d="M0 -9 L-5 -1 L-9 -6 Q-8 4 -2 8" fill="#f6a9c6"/><path d="M0 -9 L0 9" stroke="#e46f9b" stroke-width="1"/>`);
+    case "daisy": {
+      let p = "";
+      for (let i = 0; i < 10; i++) p += `<ellipse cx="0" cy="-7" rx="2.8" ry="5.5" fill="#fff" stroke="#eee4da" stroke-width=".6" transform="rotate(${i * 36})"/>`;
+      return g(p + `<circle r="4" fill="#f5c542"/><circle r="4" fill="none" stroke="#e0a92a" stroke-width="1"/>`);
+    }
+    case "baby": {
+      const pts = [[0, 0], [-6, -4], [6, -3], [-3, 6], [5, 6], [-8, 4], [2, -8], [8, 2], [-2, -3]];
+      return g(pts.map(([a, b]) => `<circle cx="${a}" cy="${b}" r="2.4" fill="#fff" stroke="#e6ddd6" stroke-width=".6"/>`).join(""));
+    }
+    case "sunflower": {
+      let p = "";
+      for (let i = 0; i < 14; i++) p += `<ellipse cx="0" cy="-10" rx="3.2" ry="6.5" fill="#f7c531" transform="rotate(${i * 25.7})"/>`;
+      return g(p + `<circle r="7" fill="#7a4b22"/><circle r="4.5" fill="#5e3818"/>`);
+    }
+    case "lavender": {
+      let p = `<path d="M0 12 L0 -12" stroke="#6aa57b" stroke-width="1.4"/>`;
+      for (let i = 0; i < 6; i++) {
+        const yy = -11 + i * 3.6, w = 2.6 + i * .25;
+        p += `<ellipse cx="-2.2" cy="${yy}" rx="${w}" ry="2" fill="#a17fd1"/><ellipse cx="2.2" cy="${yy + 1.4}" rx="${w}" ry="2" fill="#8c69c2"/>`;
+      }
+      return g(p);
+    }
+    case "hydrangea": {
+      const pts = [[0, 0], [-6, -5], [6, -5], [-7, 3], [7, 3], [0, -9], [0, 8], [-3, -3], [3, 4], [4, -2], [-4, 6]];
+      return g(`<circle r="12" fill="#a9c4ec"/>` + pts.map(([a, b], i) =>
+        `<g transform="translate(${a} ${b})"><circle cx="0" cy="-1.6" r="1.8" fill="${i % 2 ? "#7e9fdc" : "#c3b2ea"}"/><circle cx="1.6" cy="0" r="1.8" fill="${i % 2 ? "#7e9fdc" : "#c3b2ea"}"/><circle cx="0" cy="1.6" r="1.8" fill="${i % 2 ? "#8eaee3" : "#b39fe3"}"/><circle cx="-1.6" cy="0" r="1.8" fill="${i % 2 ? "#8eaee3" : "#b39fe3"}"/></g>`).join(""));
+    }
+    case "lily": {
+      let p = "";
+      for (let i = 0; i < 6; i++) p += `<path d="M0 0 Q-4 -7 0 -14 Q4 -7 0 0" fill="#fffaf2" stroke="#eadfcf" stroke-width=".8" transform="rotate(${i * 60})"/>`;
+      for (let i = 0; i < 6; i++) p += `<path d="M0 0 L0 -7" stroke="#f0a35e" stroke-width="1" transform="rotate(${i * 60 + 30})"/><circle cx="0" cy="-7" r="1.1" fill="#c0612b" transform="rotate(${i * 60 + 30})"/>`;
+      return g(p + `<circle r="2" fill="#d9e88a"/>`);
+    }
+  }
+  return "";
+}
+function iconSvg(type) {
+  return `<svg viewBox="-16 -16 32 32" aria-hidden="true">${flowerSvg(type, 0, 0, 1)}</svg>`;
+}
+
+function faceSvg(c, mood) {
+  const mouth = mood > .55 ? `<path d="M-5 7 Q0 12 5 7" fill="none" stroke="#7a3b30" stroke-width="1.8" stroke-linecap="round"/>`
+    : mood > .25 ? `<path d="M-4 9 L4 9" stroke="#7a3b30" stroke-width="1.8" stroke-linecap="round"/>`
+    : `<path d="M-5 11 Q0 6 5 11" fill="none" stroke="#7a3b30" stroke-width="1.8" stroke-linecap="round"/>`;
+  const brow = mood > .25 ? "" : `<path d="M-10 -5 L-4 -3 M10 -5 L4 -3" stroke="${c.hair}" stroke-width="1.6" stroke-linecap="round"/>`;
+  const hair = c.long
+    ? `<path d="M-19 -2 Q-21 -22 0 -22 Q21 -22 19 -2 L20 18 L13 16 L14 -6 Q0 -12 -14 -6 L-13 16 L-20 18 Z" fill="${c.hair}"/>`
+    : `<path d="M-17 -2 Q-19 -21 0 -21 Q19 -21 17 -2 Q14 -12 0 -12 Q-14 -12 -17 -2 Z" fill="${c.hair}"/>`;
+  return `<svg class="face" viewBox="-24 -26 48 52" aria-hidden="true">
+    <path d="M-18 26 Q-18 14 0 14 Q18 14 18 26 Z" fill="${c.shirt}"/>
+    <circle r="16" fill="#f7d8c4"/>${hair}
+    <circle cx="-6" cy="0" r="1.9" fill="#3b2f2a"/><circle cx="6" cy="0" r="1.9" fill="#3b2f2a"/>
+    <ellipse cx="-10" cy="5" rx="3" ry="1.8" fill="#f2a5a0" opacity=".7"/><ellipse cx="10" cy="5" rx="3" ry="1.8" fill="#f2a5a0" opacity=".7"/>
+    ${brow}${mouth}
+  </svg>`;
+}
+
+function bouquetSvg(items, wrapKey) {
+  const w = WRAPS[wrapKey];
+  const n = items.length;
+  const pos = [];
+  for (let i = 0; i < n; i++) {
+    const t = n === 1 ? .5 : i / (n - 1);
+    const ring = i % 3;
+    const ang = (-62 + t * 124) * Math.PI / 180;
+    const rad = 26 + ring * 15 + (n > 8 ? 6 : 0);
+    pos.push([100 + Math.sin(ang) * rad, 92 - Math.cos(ang) * rad * .85]);
+  }
+  const order = pos.map((p, i) => i).sort((a, b) => pos[a][1] - pos[b][1]);
+  let stems = "", heads = "";
+  order.forEach((i) => {
+    const [x, y] = pos[i];
+    stems += `<path d="M${x.toFixed(1)} ${y.toFixed(1)} Q${((x + 100) / 2).toFixed(1)} ${(y + 40).toFixed(1)} 100 172" stroke="#6aa57b" stroke-width="2.2" fill="none"/>`;
+    const leaf = i % 2 ? `<ellipse cx="${(x + 6).toFixed(1)}" cy="${(y + 16).toFixed(1)}" rx="7" ry="3" fill="#7fb98d" transform="rotate(35 ${(x + 6).toFixed(1)} ${(y + 16).toFixed(1)})"/>` : "";
+    heads += leaf + `<g class="head" data-i="${i}">${flowerSvg(items[i], x, y, items[i] === "hydrangea" ? 1.5 : 1.35)}<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="14" fill="transparent"/></g>`;
+  });
+  const paper = w
+    ? `<path d="M48 96 L152 96 L112 186 L88 186 Z" fill="${w.color}"/>
+       <path d="M48 96 L100 112 L88 186 Z" fill="${w.fold}" opacity=".55"/>
+       <path d="M152 96 L100 112 L112 186 Z" fill="#fff" opacity=".18"/>
+       <path d="M84 150 Q100 158 116 150" stroke="#e25b4f" stroke-width="5" fill="none" stroke-linecap="round"/>
+       <path d="M100 154 l-12 14 M100 154 l12 14" stroke="#e25b4f" stroke-width="4" stroke-linecap="round"/>`
+    : `<path d="M90 186 L110 186" stroke="#c8b9ae" stroke-width="3" stroke-dasharray="4 3"/>`;
+  return `<svg viewBox="0 0 200 200" aria-label="当前花束">${stems}${heads}${paper}</svg>`;
+}
+
+/* ---------- 状态 ---------- */
+function freshSave() {
+  return { day: 1, coins: 40, earned: 0, upgrades: [], stock: { rose: 8, tulip: 8, daisy: 8, baby: 6 }, stars: [], won: false };
+}
+let save = load();
+let run = null;
+let bench = { items: [], wrap: null };
+let selectedId = null;
+let paused = true;
+let lastTs = 0;
+let idSeq = 1;
+
+function load() {
+  try { return Object.assign(freshSave(), JSON.parse(localStorage.getItem(SAVE_KEY)) || {}); } catch { return freshSave(); }
+}
+function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch {} }
+const has = (id) => save.upgrades.includes(id);
+const unlockedFlowers = () => Object.keys(FLOWERS).filter((k) => FLOWERS[k].day <= save.day);
+const unlockedWraps = () => Object.keys(WRAPS).filter((k) => WRAPS[k].day <= save.day);
+const rand = (a) => a[Math.floor(Math.random() * a.length)];
+const randInt = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const $ = (s) => document.querySelector(s);
+
+function startDay() {
+  unlockedFlowers().forEach((k) => { if (save.stock[k] == null) save.stock[k] = 6; });
+  run = {
+    t: DAY_SECONDS, customers: [], nextSpawn: 1.2, served: 0, angry: 0, income: 0, dayStars: [], closed: false
+  };
+  bench = { items: [], wrap: null };
+  selectedId = null;
+  paused = false;
+  closeModal();
+  renderAll();
+}
+
+function spawnInterval() {
+  const base = Math.max(5.5, 11 - save.day * .8);
+  return (has("bell") ? base * .75 : base) * (.8 + Math.random() * .4);
+}
+function patienceFor(order) {
+  const base = Math.max(30, 52 - save.day * 2.5) + order.total * 2.5;
+  return has("chair") ? base * 1.35 : base;
+}
+
+function makeOrder() {
+  const fl = unlockedFlowers();
+  const wr = unlockedWraps();
+  const occ = rand(OCCASIONS);
+  const favs = occ.fav.filter((f) => fl.includes(f));
+  const main = favs.length ? rand(favs) : rand(fl.filter((f) => f !== "baby"));
+  const want = {};
+  const maxMain = Math.min(6, 2 + save.day);
+  want[main] = randInt(1, maxMain);
+  if (Math.random() < .35 + save.day * .08) {
+    const others = fl.filter((f) => f !== main && f !== "baby");
+    if (others.length) want[rand(others)] = randInt(1, Math.min(4, 1 + save.day));
+  }
+  if (Math.random() < .5) want.baby = randInt(1, 2);
+  const wraps = occ.wraps.filter((w) => wr.includes(w));
+  const wrap = wraps.length ? rand(wraps) : "kraft";
+  const total = Object.values(want).reduce((a, b) => a + b, 0);
+  const value = Object.entries(want).reduce((s, [k, n]) => s + FLOWERS[k].price * n, 0) + 4;
+  return { occ, line: rand(occ.lines), want, wrap, total, value };
+}
+
+function spawnCustomer() {
+  if (run.customers.length >= 3) return;
+  const order = makeOrder();
+  const p = patienceFor(order);
+  run.customers.push({
+    id: idSeq++, name: rand(NAMES), hair: rand(HAIR), shirt: rand(SHIRT), long: Math.random() < .5,
+    order, patience: p, maxPatience: p
+  });
+  if (selectedId == null) selectedId = run.customers[run.customers.length - 1].id;
+  renderQueue(); renderBubble();
+}
+
+function orderText(o) {
+  const parts = Object.entries(o.want).map(([k, n]) => `<b>${n}${FLOWERS[k].unit}${FLOWERS[k].name}</b>`);
+  return `${o.line}，想要${parts.join("、")}，用<b>${WRAPS[o.wrap].name}</b>包～`;
+}
+
+/* ---------- 游戏循环 ---------- */
+function tick(ts) {
+  const dt = Math.min(.1, (ts - lastTs) / 1000 || 0);
+  lastTs = ts;
+  if (!paused && run && !run.closed) {
+    run.t -= dt;
+    run.nextSpawn -= dt;
+    if (run.nextSpawn <= 0 && run.t > 8) { spawnCustomer(); run.nextSpawn = spawnInterval(); }
+    for (const c of [...run.customers]) {
+      c.patience -= dt;
+      if (c.patience <= 0) customerLeaves(c, false);
+    }
+    if (run.t <= 0) endDay();
+    updateBars();
+  }
+  requestAnimationFrame(tick);
+}
+
+function updateBars() {
+  $("#timeFill").style.width = `${Math.max(0, run.t / DAY_SECONDS * 100)}%`;
+  for (const c of run.customers) {
+    const el = document.querySelector(`.cust[data-id="${c.id}"]`);
+    if (!el) continue;
+    const r = Math.max(0, c.patience / c.maxPatience);
+    const bar = el.querySelector(".patience i");
+    bar.style.width = `${r * 100}%`;
+    bar.style.background = r > .55 ? "#6aa57b" : r > .25 ? "#f2b544" : "#e25b4f";
+    const mood = r > .55 ? 2 : r > .25 ? 1 : 0;
+    if (+el.dataset.mood !== mood) {
+      el.dataset.mood = mood;
+      el.querySelector(".face").outerHTML = faceSvg(c, r);
+    }
+  }
+}
+
+function customerLeaves(c, happy) {
+  run.customers = run.customers.filter((x) => x.id !== c.id);
+  if (!happy) {
+    run.angry++;
+    run.dayStars.push(0);
+    save.stars.push(0);
+    toast(`${c.name} 等不及走掉了…`, "口碑 -1 星");
+  }
+  if (selectedId === c.id) selectedId = run.customers[0]?.id ?? null;
+  const el = document.querySelector(`.cust[data-id="${c.id}"]`);
+  if (el) { el.classList.add("leaving"); setTimeout(() => { renderQueue(); renderBubble(); }, 330); }
+  else { renderQueue(); renderBubble(); }
+  renderTop();
+}
+
+/* ---------- 交互 ---------- */
+function addFlower(k) {
+  if (paused || !run || run.closed) return;
+  if (FLOWERS[k].day > save.day) return;
+  if ((save.stock[k] || 0) <= 0) return toast(`${FLOWERS[k].name}卖完了`, "点下方“进货”补一点");
+  if (bench.items.length >= 14) return toast("花束已经塞不下啦");
+  save.stock[k]--;
+  bench.items.push(k);
+  renderBench(); renderShelf();
+}
+function removeFlowerAt(i) {
+  const k = bench.items[i];
+  if (!k) return;
+  bench.items.splice(i, 1);
+  save.stock[k]++;
+  renderBench(); renderShelf();
+}
+function clearBench() {
+  bench.items.forEach((k) => save.stock[k]++);
+  bench = { items: [], wrap: bench.wrap };
+  renderBench(); renderShelf();
+}
+function restock(k) {
+  const qty = has("bucket") ? 8 : 5;
+  const price = FLOWERS[k].cost * qty;
+  if (save.coins < price) return toast("钱不够进货了", `需要 ¥${price}`);
+  save.coins -= price;
+  save.stock[k] = (save.stock[k] || 0) + qty;
+  persist();
+  renderShelf(); renderTop();
+}
+
+function serve() {
+  const c = run.customers.find((x) => x.id === selectedId);
+  if (!c || !bench.items.length) return;
+  const have = {};
+  bench.items.forEach((k) => { have[k] = (have[k] || 0) + 1; });
+  const keys = new Set([...Object.keys(have), ...Object.keys(c.order.want)]);
+  let diff = 0;
+  keys.forEach((k) => { diff += Math.abs((have[k] || 0) - (c.order.want[k] || 0)); });
+  const wrapOk = bench.wrap === c.order.wrap;
+  let stars;
+  if (diff === 0 && wrapOk) stars = 3;
+  else if (diff <= 1 && (wrapOk || diff === 0)) stars = 2;
+  else if (diff <= 3 && bench.wrap) stars = 1;
+  else stars = 0;
+
+  const ratio = Math.max(0, c.patience / c.maxPatience);
+  const pay = Math.round(c.order.value * [0, .5, .85, 1][stars]);
+  const tip = stars ? Math.round(ratio * c.order.value * .35 * (stars / 3) * (has("window") ? 1.6 : 1)) : 0;
+  const total = pay + tip;
+  save.coins += total;
+  save.earned += total;
+  run.income += total;
+  run.served++;
+  run.dayStars.push(stars);
+  save.stars.push(stars);
+
+  const msg = stars === 3 ? "完美！一模一样" : stars === 2 ? "还不错～" : stars === 1 ? "嗯…凑合吧" : "这不是我要的！";
+  const why = [];
+  if (diff) why.push(`花差了 ${diff} 处`);
+  if (!wrapOk) why.push(bench.wrap ? "包装纸不对" : "没包装");
+  toast(`${"★".repeat(stars)}${"☆".repeat(3 - stars)}  +¥${total}`, `${c.name}：${msg}${why.length ? "（" + why.join("，") + "）" : tip ? `（小费 ¥${tip}）` : ""}`);
+
+  bench = { items: [], wrap: null };
+  customerLeaves(c, true);
+  persist();
+  renderBench(); renderShelf(); renderTop();
+  if (!save.won && save.earned >= GOAL) {
+    save.won = true; persist();
+    setTimeout(() => toast("🎉 累计营业额达成目标！", "你的小花店成了街区网红店"), 1700);
+  }
+}
+
+function endDay() {
+  run.closed = true;
+  paused = true;
+  run.customers = [];
+  bench.items.forEach((k) => save.stock[k]++);
+  bench = { items: [], wrap: null };
+  const nextDay = save.day + 1;
+  const avg = run.dayStars.length ? (run.dayStars.reduce((a, b) => a + b, 0) / run.dayStars.length).toFixed(1) : "-";
+  save.day = nextDay;
+  persist();
+  renderAll();
+  showDaySummary(nextDay - 1, avg);
+}
+
+/* ---------- 渲染 ---------- */
+function renderTop() {
+  $("#dayLabel").textContent = `第 ${save.day} 天`;
+  $("#coins").textContent = save.coins;
+  const s = save.stars.slice(-20);
+  $("#rep").textContent = s.length ? `★ ${(s.reduce((a, b) => a + b, 0) / s.length).toFixed(1)}` : "★ -";
+  $("#goalText").textContent = save.won ? `🎉 目标达成 · 累计 ¥${save.earned}` : `目标：累计营业额 ¥${save.earned} / ${GOAL}`;
+  $("#servedText").textContent = run ? `今日接待 ${run.served} 位` : "";
+  $("#pauseBtn").textContent = paused ? "▶" : "⏸";
+}
+
+function renderQueue() {
+  const q = $("#queue");
+  const cs = run ? run.customers : [];
+  let html = "";
+  for (let i = 0; i < 3; i++) {
+    const c = cs[i];
+    if (!c) { html += `<div class="slot">${run && !run.closed ? "等待客人…" : "打烊中"}</div>`; continue; }
+    const r = Math.max(0, c.patience / c.maxPatience);
+    const mini = Object.entries(c.order.want).map(([k, n]) => `<span>${iconSvg(k)}${n}</span>`).join("");
+    html += `<button class="cust ${c.id === selectedId ? "sel" : ""}" data-id="${c.id}" data-mood="${r > .55 ? 2 : r > .25 ? 1 : 0}" aria-label="${c.name}的订单">
+      ${faceSvg(c, r)}
+      <div class="name">${c.name}</div>
+      <div class="occ">${c.order.occ.tag}</div>
+      <div class="patience"><i style="width:${r * 100}%;background:${r > .55 ? "#6aa57b" : r > .25 ? "#f2b544" : "#e25b4f"}"></i></div>
+      <div class="mini-order">${mini}<span class="wrap-dot" style="background:${WRAPS[c.order.wrap].color}" title="${WRAPS[c.order.wrap].name}"></span></div>
+    </button>`;
+  }
+  q.innerHTML = html;
+}
+
+function renderBubble() {
+  const b = $("#bubble");
+  const cs = run ? run.customers : [];
+  const idx = cs.findIndex((c) => c.id === selectedId);
+  if (idx < 0) {
+    b.style.setProperty("--tail", "50%");
+    b.innerHTML = `<span class="muted">${run && !run.closed ? "还没有客人，先看看花架上的库存吧～" : "今天打烊啦。"}</span>`;
+    renderServeBtn();
+    return;
+  }
+  const c = cs[idx];
+  b.style.setProperty("--tail", `${16 + idx * 33}%`);
+  b.innerHTML = `<b style="color:var(--ink)">${c.name}：</b>${orderText(c.order)}`;
+  renderServeBtn();
+}
+
+function renderBench() {
+  const box = $("#bouquet");
+  box.innerHTML = bouquetSvg(bench.items, bench.wrap) +
+    `<div class="count">${bench.items.length} 枝 · 成本 ¥${bench.items.reduce((s, k) => s + FLOWERS[k].cost, 0)}</div>` +
+    (bench.items.length ? "" : `<div class="hint">点下面花架上的花<br>开始包花束</div>`);
+  const ul = unlockedWraps();
+  $("#wraps").innerHTML = Object.entries(WRAPS).map(([k, w]) =>
+    `<button class="wrap ${bench.wrap === k ? "on" : ""} ${ul.includes(k) ? "" : "locked"}" data-wrap="${k}" style="background:${w.color}" aria-label="${w.name}${ul.includes(k) ? "" : "（第" + w.day + "天解锁）"}"></button>`).join("");
+  $("#wrapName").textContent = bench.wrap ? WRAPS[bench.wrap].name : "还没选包装纸";
+  renderServeBtn();
+}
+
+function renderServeBtn() {
+  const ok = run && !run.closed && !paused && bench.items.length && run.customers.some((c) => c.id === selectedId);
+  $("#serveBtn").disabled = !ok;
+  const c = run && run.customers.find((x) => x.id === selectedId);
+  $("#serveBtn").textContent = c ? `送给${c.name}` : "包好送出";
+}
+
+function renderShelf() {
+  const qty = has("bucket") ? 8 : 5;
+  $("#shelf").innerHTML = Object.entries(FLOWERS).map(([k, f]) => {
+    const locked = f.day > save.day;
+    const st = save.stock[k] || 0;
+    if (locked) return `<div class="fl locked">${iconSvg(k)}<div class="fn">${f.name}</div><div class="st">第 ${f.day} 天解锁</div></div>`;
+    return `<div class="fl ${st ? "" : "out"}">
+      <button data-add="${k}" style="width:100%" aria-label="加一${f.unit}${f.name}">${iconSvg(k)}<div class="fn">${f.name}</div><div class="st">库存 ${st} · ¥${f.price}</div></button>
+      <button class="restock" data-restock="${k}" ${save.coins < f.cost * qty ? "disabled" : ""}>进货+${qty} ¥${f.cost * qty}</button>
+    </div>`;
+  }).join("");
+}
+
+function renderAll() { renderTop(); renderQueue(); renderBubble(); renderBench(); renderShelf(); }
+
+/* ---------- 弹窗 ---------- */
+function openModal(html) { $("#modalCard").innerHTML = html; $("#modal").classList.add("show"); }
+function closeModal() { $("#modal").classList.remove("show"); }
+
+function heroBouquet() {
+  return bouquetSvg(["tulip", "rose", "daisy", "sunflower", "baby", "rose", "tulip"], "pink").replace("<svg ", '<svg class="hero-svg" ');
+}
+
+function showStart() {
+  const cont = save.day > 1;
+  openModal(`${heroBouquet()}
+    <h2>小花店物语</h2>
+    <p class="lead">${cont ? `欢迎回来！今天是开店第 ${save.day} 天` : "你在街角开了一家小花店"}</p>
+    <ul class="rules">
+      <li><b>1</b><span>客人进门会说想要什么花、几枝、用什么包装纸，<b style="background:none;color:var(--red);width:auto;height:auto;display:inline">点客人</b>可以切换订单。</span></li>
+      <li><b>2</b><span>点花架上的花加进花束，点花束里的花能拿出来；再选包装纸，按“送给 TA”。</span></li>
+      <li><b>3</b><span>完全按要求包 = 三星 + 小费；客人头顶的耐心条耗完就会生气走掉。</span></li>
+      <li><b>4</b><span>花卖完了记得进货，打烊后可以用赚的钱升级小店。每过几天会解锁新的花和包装纸。</span></li>
+    </ul>
+    <button class="btn primary" id="startBtn">${cont ? `开始第 ${save.day} 天营业` : "开门营业"}</button>`);
+}
+
+function showDaySummary(day, avg) {
+  const newF = Object.values(FLOWERS).filter((f) => f.day === save.day).map((f) => f.name);
+  const newW = Object.values(WRAPS).filter((w) => w.day === save.day).map((w) => w.name);
+  const unlock = newF.length || newW.length
+    ? `<div class="unlock-note">🌱 明天解锁：${[...newF, ...newW.map((n) => n + "包装纸")].join("、")}</div>` : "";
+  openModal(`<h2>第 ${day} 天打烊啦</h2>
+    <p class="lead">${run.angry ? `有 ${run.angry} 位客人没等到花就走了` : "今天所有客人都开开心心地走了 🌷"}</p>
+    <div class="summary">
+      <div><b>¥${run.income}</b>今日收入</div>
+      <div><b>${run.served}</b>接待客人</div>
+      <div><b>${avg}</b>平均星级</div>
+    </div>
+    ${unlock}
+    <h4 style="margin:0 0 8px;font-size:13px">用钱升级小店（当前 ¥${save.coins}）</h4>
+    <div class="upgrades">${UPGRADES.map((u) => {
+      const owned = has(u.id);
+      return `<button class="up ${owned ? "owned" : ""}" data-buy="${u.id}" ${owned || save.coins < u.cost ? "disabled" : ""}>
+        <span class="em">${u.em}</span><span class="tx"><b>${u.name}</b><small>${u.desc}</small></span>
+        <span class="price">${owned ? "已拥有" : "¥" + u.cost}</span></button>`;
+    }).join("")}</div>
+    <button class="btn primary" id="startBtn">开始第 ${save.day} 天营业</button>`);
+}
+
+function buy(id) {
+  const u = UPGRADES.find((x) => x.id === id);
+  if (!u || has(id) || save.coins < u.cost) return;
+  save.coins -= u.cost;
+  save.upgrades.push(id);
+  persist();
+  toast(`${u.em} 买下了${u.name}`, u.desc);
+  const avgEl = document.querySelectorAll(".summary b")[2];
+  showDaySummary(save.day - 1, avgEl ? avgEl.textContent : "-");
+  renderTop(); renderShelf();
+}
+
+function togglePause() {
+  if (!run || run.closed) return;
+  paused = !paused;
+  if (paused) {
+    openModal(`<h2>休息一下</h2><p class="lead">客人们会等你回来的</p>
+      <div class="row-btns"><button class="btn primary" id="resumeBtn">继续营业</button></div>`);
+  } else closeModal();
+  renderTop(); renderServeBtn();
+}
+
+function toast(main, sub = "") {
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.innerHTML = `${main}${sub ? `<small>${sub}</small>` : ""}`;
+  $("#toasts").appendChild(el);
+  setTimeout(() => el.remove(), 1650);
+}
+
+/* ---------- 事件 ---------- */
+document.addEventListener("click", (e) => {
+  const t = e.target;
+  const cust = t.closest(".cust");
+  if (cust) { selectedId = +cust.dataset.id; renderQueue(); renderBubble(); return; }
+  const add = t.closest("[data-add]");
+  if (add) return addFlower(add.dataset.add);
+  const head = t.closest(".head");
+  if (head) return removeFlowerAt(+head.dataset.i);
+  const rs = t.closest("[data-restock]");
+  if (rs) return restock(rs.dataset.restock);
+  const wrap = t.closest("[data-wrap]");
+  if (wrap) {
+    if (WRAPS[wrap.dataset.wrap].day > save.day) return toast(`第 ${WRAPS[wrap.dataset.wrap].day} 天解锁`);
+    bench.wrap = wrap.dataset.wrap; return renderBench();
+  }
+  const buyBtn = t.closest("[data-buy]");
+  if (buyBtn) return buy(buyBtn.dataset.buy);
+  if (t.closest("#startBtn")) return startDay();
+  if (t.closest("#resumeBtn") || t.closest("#pauseBtn")) return togglePause();
+  if (t.closest("#serveBtn")) return serve();
+  if (t.closest("#clearBtn")) return clearBench();
+  if (t.closest("#resetBtn")) {
+    if (confirm("确定要关掉这家店重新开始吗？进度会清空。")) {
+      save = freshSave(); persist(); run = null; paused = true; bench = { items: [], wrap: null }; renderAll(); showStart();
+    }
+  }
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && run && !run.closed && !paused) togglePause();
+});
+
+renderAll();
+showStart();
+requestAnimationFrame((ts) => { lastTs = ts; tick(ts); });
+</script>
+</body>
+</html>
