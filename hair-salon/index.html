@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>扎个马尾 · 扎头发小游戏</title>
+<meta name="description" content="拢发束、套皮筋、控松紧，扎一个漂亮的马尾，再挑发带、蝴蝶结、发夹和兽耳来搭配。" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎀</text></svg>" />
+<style>
+  :root {
+    --base: #fff5f6;
+    --sakura: #f6b8c8;
+    --sakura-d: #e993ab;
+    --mint: #8fd8c4;
+    --mint-d: #4fb39a;
+    --red: #e8505b;
+    --ink: #4a3540;
+    --ink-2: #7c6470;
+    --card: #ffffff;
+    --line: #f6dbe2;
+    --r: 22px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+  html, body { margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    color: var(--ink);
+    background: var(--base) radial-gradient(circle at 85% 0%, #ffe3ea 0, transparent 45%) no-repeat;
+    min-height: 100vh;
+  }
+  button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; }
+  .app { max-width: 460px; margin: 0 auto; padding: 12px 14px 24px; }
+
+  header { display: flex; align-items: center; justify-content: space-between; }
+  header h1 { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 1px; }
+  header h1 span { color: var(--red); }
+  .reset { font-size: 12px; color: var(--ink-2); background: var(--card); border-radius: 99px; padding: 6px 12px; box-shadow: 0 2px 0 var(--line); font-weight: 700; }
+  .steps { display: flex; gap: 6px; margin: 10px 0; }
+  .steps div { flex: 1; text-align: center; font-size: 11px; font-weight: 800; padding: 6px 0; border-radius: 12px; background: var(--card); color: #c3aab4; box-shadow: 0 2px 0 var(--line); }
+  .steps div b { display: block; font-size: 10px; font-weight: 700; opacity: .8; }
+  .steps div.on { background: var(--mint); color: #fff; box-shadow: 0 2px 0 var(--mint-d); }
+  .steps div.done { color: var(--mint-d); }
+
+  .stage-wrap { position: relative; background: linear-gradient(180deg, #fff 0%, #ffeef2 100%); border-radius: 28px; box-shadow: 0 8px 22px rgba(232, 80, 91, .1), inset 0 0 0 6px #fff; overflow: hidden; }
+  #stage { display: block; width: 100%; aspect-ratio: 360 / 440; touch-action: none; }
+  .colors { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,.85); padding: 8px 6px; border-radius: 99px; box-shadow: 0 4px 12px rgba(74,53,64,.1); }
+  .colors button { width: 30px; height: 30px; border-radius: 50%; position: relative; box-shadow: inset 0 0 0 2px rgba(255,255,255,.6); }
+  .colors button.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--mint-d); }
+  .colors button span { position: absolute; right: 38px; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 800; white-space: nowrap; background: #fff; padding: 2px 6px; border-radius: 6px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .colors button.on span { opacity: 1; }
+  .avatar { position: absolute; left: 12px; top: 12px; width: 76px; height: 76px; border-radius: 50%; background: #fff; box-shadow: 0 4px 12px rgba(74,53,64,.12); overflow: hidden; border: 3px solid #fff; transition: transform .2s; }
+  .avatar svg { width: 100%; height: 100%; display: block; }
+  .avatar.shake { animation: shake .3s ease-in-out infinite; }
+  @keyframes shake { 25% { transform: translateX(-2px) rotate(-3deg); } 75% { transform: translateX(2px) rotate(3deg); } }
+  .say { position: absolute; left: 94px; top: 26px; background: #fff; font-size: 12px; font-weight: 800; padding: 6px 10px; border-radius: 12px; box-shadow: 0 3px 10px rgba(74,53,64,.12); opacity: 0; transform: scale(.8); transform-origin: 0 50%; transition: all .2s; white-space: nowrap; }
+  .say.show { opacity: 1; transform: none; }
+  .say::before { content: ""; position: absolute; left: -5px; top: 50%; width: 10px; height: 10px; background: #fff; transform: translateY(-50%) rotate(45deg); }
+
+  .panel { margin-top: 12px; background: var(--card); border-radius: var(--r); padding: 14px; box-shadow: 0 3px 0 var(--line); }
+  .tip { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .tip i { font-style: normal; width: 26px; height: 26px; border-radius: 9px; background: var(--mint); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; flex: none; }
+  .sub { font-size: 12px; color: var(--ink-2); margin: 6px 0 10px 34px; line-height: 1.5; }
+  .bar { height: 12px; border-radius: 99px; background: #fbe6ec; overflow: hidden; position: relative; }
+  .bar > i { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--mint); transition: width .15s; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-2); font-weight: 700; margin-top: 6px; }
+  .gauge { height: 22px; border-radius: 99px; background: #fbe6ec; position: relative; overflow: hidden; }
+  .gauge .zone { position: absolute; top: 0; bottom: 0; background: rgba(143, 216, 196, .75); border-left: 2px solid var(--mint-d); border-right: 2px solid var(--mint-d); }
+  .gauge .danger { position: absolute; top: 0; bottom: 0; right: 0; background: repeating-linear-gradient(45deg, rgba(232,80,91,.18) 0 6px, transparent 6px 12px); }
+  .gauge .needle { position: absolute; top: -2px; bottom: -2px; width: 4px; margin-left: -2px; border-radius: 2px; background: var(--ink); box-shadow: 0 0 0 2px #fff; }
+  .hold { margin-top: 12px; width: 100%; height: 52px; border-radius: 18px; background: var(--red); color: #fff; font-weight: 900; font-size: 16px; box-shadow: 0 4px 0 #c03b46; touch-action: none; }
+  .hold.pressing { transform: translateY(3px); box-shadow: 0 1px 0 #c03b46; background: #d9434e; }
+
+  .tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-bottom: 10px; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button { flex: none; font-size: 12px; font-weight: 800; padding: 7px 12px; border-radius: 99px; background: #fdeef2; color: var(--ink-2); }
+  .tabs button.on { background: var(--mint); color: #fff; }
+  .tabs button em { font-style: normal; font-size: 10px; margin-left: 3px; }
+  .items { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .item { border-radius: 16px; background: #fff7f9; padding: 6px 2px 5px; text-align: center; box-shadow: inset 0 0 0 2px #fbe4ea; }
+  .item svg { width: 48px; height: 48px; display: block; margin: 0 auto; }
+  .item small { display: block; font-size: 11px; font-weight: 800; color: var(--ink); }
+  .item.on { box-shadow: inset 0 0 0 2px var(--mint-d); background: #ecf9f5; }
+  .item.none svg { opacity: .5; }
+  .row { display: flex; gap: 8px; margin-top: 12px; }
+  .btn { flex: 1; height: 46px; border-radius: 16px; font-weight: 900; font-size: 15px; }
+  .btn.primary { background: var(--red); color: #fff; box-shadow: 0 4px 0 #c03b46; }
+  .btn.soft { background: #e6f7f2; color: var(--mint-d); box-shadow: 0 4px 0 #c5ebe0; }
+  .btn:active { transform: translateY(2px); }
+
+  .palette { margin-top: 16px; }
+  .palette h3 { font-size: 12px; color: var(--ink-2); margin: 0 0 8px 4px; font-weight: 800; }
+  .swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .swatches div { border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 2px 0 var(--line); font-size: 10px; text-align: center; padding-bottom: 5px; color: var(--ink-2); font-weight: 700; }
+  .swatches div i { display: block; height: 30px; margin-bottom: 4px; }
+
+  .modal { position: fixed; inset: 0; z-index: 30; background: rgba(74, 53, 64, .45); display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  .modal.show { display: flex; }
+  .card { width: 100%; max-width: 360px; background: #fff; border-radius: 28px; padding: 22px 18px 18px; text-align: center; animation: pop .4s cubic-bezier(.2, .9, .3, 1.3); max-height: calc(100vh - 40px); overflow-y: auto; }
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+  .card h2 { margin: 0; font-size: 20px; }
+  .score { font-size: 56px; font-weight: 900; color: var(--red); line-height: 1.1; margin: 8px 0 2px; }
+  .score small { font-size: 16px; color: var(--ink-2); }
+  .comment { font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 14px; }
+  .metric { text-align: left; margin-bottom: 10px; }
+  .metric div { display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; margin-bottom: 4px; }
+  .metric div span { color: var(--ink-2); font-weight: 700; }
+  .card .final-svg { width: 200px; display: block; margin: 0 auto 6px; border-radius: 22px; background: linear-gradient(180deg, #fff 0, #ffeef2 100%); }
+  .style-name { display: inline-block; background: var(--sakura); color: #fff; font-weight: 900; font-size: 13px; padding: 4px 12px; border-radius: 99px; margin: 4px 0 8px; }
+  .worn { font-size: 12px; color: var(--ink-2); line-height: 1.6; margin-bottom: 4px; }
+
+  .hint-hand { animation: swipe 1.6s ease-in-out infinite; }
+  @keyframes swipe { 0% { transform: translate(0, -30px); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translate(0, 70px); opacity: 0; } }
+  .hint-ring { transform-origin: 180px 118px; animation: spin 2.4s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .hint-hand, .hint-ring, .avatar.shake, .card { animation: none; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>扎个<span>马尾</span></h1>
+    <button class="reset" id="resetBtn">重新开始</button>
+  </header>
+  <div class="steps" id="steps">
+    <div data-s="1"><b>STEP 1</b>拢发束</div>
+    <div data-s="2"><b>STEP 2</b>套皮筋</div>
+    <div data-s="3"><b>STEP 3</b>控松紧</div>
+    <div data-s="4"><b>STEP 4</b>戴发饰</div>
+  </div>
+
+  <div class="stage-wrap">
+    <svg id="stage" viewBox="0 0 360 440" aria-label="扎头发区域"></svg>
+    <div class="avatar" id="avatar"></div>
+    <div class="say" id="say"></div>
+    <div class="colors" id="colors"></div>
+  </div>
+
+  <div class="panel" id="panel"></div>
+
+  <div class="palette">
+    <h3>这套 UI 的配色</h3>
+    <div class="swatches">
+      <div><i style="background:#fff5f6;box-shadow:inset 0 0 0 1px #f3dde3"></i>粉白底<br>#FFF5F6</div>
+      <div><i style="background:#f6b8c8"></i>樱粉<br>#F6B8C8</div>
+      <div><i style="background:#8fd8c4"></i>薄荷绿<br>#8FD8C4</div>
+      <div><i style="background:#e8505b"></i>招牌红<br>#E8505B</div>
+      <div><i style="background:#4a3540"></i>可可墨<br>#4A3540</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="card" id="card"></div></div>
+
+<script>
+const HAIR_COLORS = [
+  { id: "chestnut", name: "栗棕", base: "#7a4a32", light: "#9c6646", dark: "#5a3424" },
+  { id: "black",    name: "墨黑", base: "#2f2629", light: "#4a3e43", dark: "#1d1719" },
+  { id: "honey",    name: "蜜橘", base: "#e0904f", light: "#f0ad6e", dark: "#bf7136" },
+  { id: "lilac",    name: "雾紫", base: "#9c8ac4", light: "#b7a8d8", dark: "#7c69a8" }
+];
+const SKIN = "#fde1d0", SKIN_D = "#f3c8b2", SHIRT = "#f6b8c8", SHIRT_D = "#e993ab";
+const N = 20;
+const B = { x: 180, y: 118 };
+
+const ACC = {
+  headband: { name: "发带", items: [
+    { id: "sport", name: "运动发带" }, { id: "maid", name: "女仆发带" }, { id: "knit", name: "针织发箍" }, { id: "pearlband", name: "珍珠发箍" }
+  ] },
+  bow: { name: "蝴蝶结", items: [
+    { id: "red", name: "大红结" }, { id: "satin", name: "樱粉缎带" }, { id: "plaid", name: "格纹结" }, { id: "velvet", name: "黑丝绒" }
+  ] },
+  pin: { name: "发夹", items: [
+    { id: "star", name: "星星夹" }, { id: "cherry", name: "樱桃夹" }, { id: "pearlpin", name: "珍珠一字夹" }, { id: "heart", name: "爱心 BB 夹" }
+  ] },
+  deco: { name: "发饰", items: [
+    { id: "daisy", name: "小雏菊" }, { id: "strawberry", name: "草莓发绳" }, { id: "chain", name: "珍珠链" }
+  ] },
+  ears: { name: "兽耳/犄角", items: [
+    { id: "cat", name: "猫耳" }, { id: "fox", name: "狐狸耳" }, { id: "bunny", name: "兔耳" }, { id: "devil", name: "小恶魔角" }, { id: "unicorn", name: "独角兽角" }
+  ] }
+};
+
+let state;
+function reset() {
+  state = {
+    step: 1,
+    hair: state ? state.hair : 0,
+    strands: Array.from({ length: N }, (_, i) => ({ g: 0, target: 0, neat: 1, i })),
+    gathered: 0,
+    ring: 0, ringAcc: 0, lastAng: null,
+    tension: 0, holding: false, zone: null, failed: false, released: false, collapse: 0,
+    scores: null,
+    acc: { headband: null, bow: null, pin: null, deco: null, ears: null },
+    tab: "headband",
+    expr: "calm"
+  };
+  const c = .55 + Math.random() * .15;
+  state.zone = [c - .085, c + .085];
+  closeModal();
+  renderPanel();
+  renderColors();
+  renderSteps();
+  draw();
+}
+
+/* ---------- 几何 ---------- */
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = (t) => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+function strandPoints(i, g) {
+  const dx = -98 + 196 * i / (N - 1);
+  const ad = Math.abs(dx);
+  const j = ((i * 37) % 7 - 3) * 2;
+  const loose = [
+    [180 + dx * .25, 76 + ad * .12],
+    [180 + dx * 1.08, 105 + ad * .1],
+    [180 + dx * 1.2 + j, 250],
+    [180 + dx * .95 + j * 2, 372 - ad * .15 + (i % 3) * 8]
+  ];
+  const up = [
+    [180 + dx * .93, 232 - ad * .55],
+    [180 + dx * 1.02, 175 - ad * .2],
+    [180 + dx * .4, 128],
+    [180 + dx * .05, 120]
+  ];
+  const e = ease(g);
+  return loose.map((p, k) => [lerp(p[0], up[k][0], e), lerp(p[1], up[k][1], e)]);
+}
+function bez(P, t) {
+  const u = 1 - t;
+  return [
+    u * u * u * P[0][0] + 3 * u * u * t * P[1][0] + 3 * u * t * t * P[2][0] + t * t * t * P[3][0],
+    u * u * u * P[0][1] + 3 * u * u * t * P[1][1] + 3 * u * t * t * P[2][1] + t * t * t * P[3][1]
+  ];
+}
+const pathD = (P) => `M${P[0][0].toFixed(1)} ${P[0][1].toFixed(1)} C${P[1][0].toFixed(1)} ${P[1][1].toFixed(1)} ${P[2][0].toFixed(1)} ${P[2][1].toFixed(1)} ${P[3][0].toFixed(1)} ${P[3][1].toFixed(1)}`;
+
+/* ---------- 绘制：背面 ---------- */
+function backView(t) {
+  const H = HAIR_COLORS[state.hair];
+  const frac = state.strands.reduce((s, x) => s + x.g, 0) / N;
+  let s = `<defs><radialGradient id="bgGlow" cx="50%" cy="35%" r="65%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#ffeef2"/></radialGradient></defs>
+    <rect width="360" height="440" fill="url(#bgGlow)"/>
+    <circle cx="60" cy="380" r="40" fill="#ffe1e8"/><circle cx="320" cy="60" r="26" fill="#e3f6f0"/>
+    <path d="M40 440 Q50 330 150 312 L210 312 Q310 330 320 440 Z" fill="${SHIRT}"/>
+    <path d="M180 312 L210 312 Q310 330 320 440 L250 440 Q240 360 180 330 Z" fill="${SHIRT_D}" opacity=".5"/>
+    <rect x="152" y="214" width="56" height="106" rx="20" fill="${SKIN}"/>
+    <rect x="186" y="214" width="22" height="106" rx="10" fill="${SKIN_D}" opacity=".6"/>`;
+  s += `<path d="M84 150 Q68 262 80 372 L280 372 Q292 262 276 150 Z" fill="${H.dark}" opacity="${(1 - frac).toFixed(2)}"/>`;
+  s += `<ellipse cx="81" cy="182" rx="10" ry="16" fill="${SKIN}"/><ellipse cx="279" cy="182" rx="10" ry="16" fill="${SKIN}"/>`;
+  s += `<ellipse cx="180" cy="160" rx="96" ry="98" fill="${H.base}"/>`;
+  s += `<path d="M96 120 Q180 50 264 120" fill="none" stroke="${H.light}" stroke-width="10" stroke-linecap="round" opacity=".35"/>`;
+  const order = [...state.strands].sort((a, b) => Math.abs(b.i - 9.5) - Math.abs(a.i - 9.5));
+  for (const st of order) {
+    const P = strandPoints(st.i, st.g);
+    const col = st.i % 3 === 0 ? H.light : st.i % 3 === 1 ? H.base : H.dark;
+    s += `<path d="${pathD(P)}" fill="none" stroke="${col}" stroke-width="18" stroke-linecap="round"/>`;
+    if (st.i % 2 === 0) s += `<path d="${pathD(P)}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".18" stroke-dasharray="30 60"/>`;
+  }
+  for (const st of state.strands) {
+    if (st.g > .95 && st.neat < 1) {
+      const [x, y] = strandPoints(st.i, 1)[0];
+      const side = st.i < N / 2 ? -1 : 1;
+      s += `<path d="M${x} ${y} q${side * 10} 6 ${side * 6} 18 q${-side * 4} 8 ${side * 4} 14" fill="none" stroke="${H.base}" stroke-width="2.4" stroke-linecap="round"/>`;
+    }
+  }
+  if (frac > .02) {
+    const f = frac;
+    const tens = state.step >= 3 ? state.tension : 0;
+    const droop = state.collapse;
+    const sw = Math.sin(t / 600) * (3 + droop * 6);
+    const w = (8 + 30 * f) * (1 - tens * .18) * (1 + droop * .25);
+    const L = (40 + 190 * f) * (1 - tens * .16 + droop * .12);
+    const by = B.y + droop * 26;
+    s += `<path d="M${B.x - w * .45} ${by} C${B.x - w * 1.45} ${by + L * .3} ${B.x - w * .9 + sw} ${by + L * .8} ${B.x + sw} ${by + L} C${B.x + w * .9 + sw} ${by + L * .8} ${B.x + w * 1.45} ${by + L * .3} ${B.x + w * .45} ${by} Z" fill="${H.base}"/>`;
+    s += `<path d="M${B.x - 3} ${by + 6} Q${B.x - w * .6} ${by + L * .45} ${B.x + sw * .8 - 2} ${by + L * .9}" fill="none" stroke="${H.light}" stroke-width="3" stroke-linecap="round" opacity=".7"/>`;
+    s += `<path d="M${B.x + 6} ${by + 8} Q${B.x + w * .5} ${by + L * .5} ${B.x + sw + 4} ${by + L * .85}" fill="none" stroke="${H.dark}" stroke-width="2.5" stroke-linecap="round" opacity=".6"/>`;
+    s += `<ellipse cx="${B.x}" cy="${by}" rx="${w * .55}" ry="7" fill="${H.base}"/>`;
+  }
+  if (state.step === 2) {
+    const r = 40, C = 2 * Math.PI * r;
+    if (state.ring < .02) s += `<g class="hint-ring"><circle cx="${B.x}" cy="${B.y}" r="34" fill="none" stroke="#4fb39a" stroke-width="3" stroke-dasharray="6 7"/><path d="M${B.x + 34} ${B.y - 8} l6 9 l-11 2 Z" fill="#4fb39a"/></g>`;
+    s += `<circle cx="${B.x}" cy="${B.y}" r="${r}" fill="none" stroke="#fde0e6" stroke-width="6"/>
+      <circle cx="${B.x}" cy="${B.y}" r="${r}" fill="none" stroke="#e8505b" stroke-width="6" stroke-linecap="round" stroke-dasharray="${(C * state.ring).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 ${B.x} ${B.y})"/>`;
+    if (state.ring > 0) s += `<ellipse cx="${B.x}" cy="${B.y}" rx="${10 + state.ring * 4}" ry="${5 + state.ring * 2}" fill="none" stroke="#e8505b" stroke-width="${1.5 + state.ring * 4}"/>`;
+  }
+  if (state.step >= 3) {
+    const tens = state.tension;
+    const by = B.y + state.collapse * 26;
+    const rx = 16 - tens * 6;
+    s += `<ellipse cx="${B.x}" cy="${by}" rx="${rx}" ry="${8 - tens * 2}" fill="#e8505b"/><ellipse cx="${B.x}" cy="${by - 2}" rx="${rx - 4}" ry="${3.5 - tens}" fill="#f48a92"/>`;
+  }
+  if (state.step === 1 && state.gathered === 0) {
+    s += `<g class="hint-hand"><circle cx="130" cy="210" r="16" fill="#8fd8c4" opacity=".55"/><circle cx="130" cy="210" r="7" fill="#4fb39a"/>
+      <path d="M130 232 l0 30 m-7 -8 l7 9 l7 -9" stroke="#4fb39a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+  }
+  return s;
+}
+
+/* ---------- 绘制：正面 + 发饰 ---------- */
+function face(expr) {
+  const eyes = {
+    happy: `<path d="M140 192 Q150 182 160 192 M200 192 Q210 182 220 192" stroke="#4a3540" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
+    pain: `<path d="M141 184 L157 192 L141 200 M219 184 L203 192 L219 200" stroke="#4a3540" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
+    default: `<ellipse cx="150" cy="192" rx="8.5" ry="11" fill="#4a3540"/><ellipse cx="210" cy="192" rx="8.5" ry="11" fill="#4a3540"/>
+      <circle cx="153" cy="187" r="3" fill="#fff"/><circle cx="213" cy="187" r="3" fill="#fff"/><circle cx="147" cy="197" r="1.5" fill="#fff" opacity=".7"/><circle cx="207" cy="197" r="1.5" fill="#fff" opacity=".7"/>`
+  };
+  const brows = expr === "frown" || expr === "pain"
+    ? `<path d="M138 170 L160 176 M222 170 L200 176" stroke="#4a3540" stroke-width="3" stroke-linecap="round" opacity=".8"/>`
+    : `<path d="M140 172 Q150 167 160 171 M200 171 Q210 167 220 172" stroke="#4a3540" stroke-width="2.6" stroke-linecap="round" fill="none" opacity=".55"/>`;
+  const mouth = {
+    happy: `<path d="M170 222 Q180 233 190 222 Z" fill="#e8505b"/>`,
+    calm: `<path d="M172 224 Q180 229 188 224" stroke="#c9576a" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+    frown: `<path d="M171 228 q4.5 -5 9 0 q4.5 5 9 0" stroke="#c9576a" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+    pain: `<ellipse cx="180" cy="227" rx="7" ry="5" fill="#c9576a"/>`,
+    sad: `<path d="M172 228 Q180 221 188 228" stroke="#c9576a" stroke-width="3" fill="none" stroke-linecap="round"/>`
+  }[expr] || "";
+  const sweat = expr === "frown" || expr === "pain" ? `<path d="M236 160 q6 10 0 14 q-6 -4 0 -14 Z" fill="#a8e0f0"/>` : "";
+  return `${eyes[expr] || eyes.default}${brows}
+    <ellipse cx="136" cy="212" rx="12" ry="6" fill="#f7a6b6" opacity=".55"/><ellipse cx="224" cy="212" rx="12" ry="6" fill="#f7a6b6" opacity=".55"/>
+    ${mouth}${sweat}`;
+}
+
+function earsSvg(id, H) {
+  switch (id) {
+    case "cat": return `<path d="M112 120 L118 58 L160 96 Z" fill="${H.base}"/><path d="M122 108 L124 74 L148 96 Z" fill="#f7b6c8"/>
+      <path d="M248 120 L242 58 L200 96 Z" fill="${H.base}"/><path d="M238 108 L236 74 L212 96 Z" fill="#f7b6c8"/>`;
+    case "fox": return `<path d="M108 124 L106 44 L162 96 Z" fill="${H.base}"/><path d="M106 44 L114 70 L124 62 Z" fill="#fff"/><path d="M118 110 L116 66 L148 96 Z" fill="#fff5ee"/>
+      <path d="M252 124 L254 44 L198 96 Z" fill="${H.base}"/><path d="M254 44 L246 70 L236 62 Z" fill="#fff"/><path d="M242 110 L244 66 L212 96 Z" fill="#fff5ee"/>`;
+    case "bunny": return `<g transform="rotate(-12 150 96)"><ellipse cx="150" cy="40" rx="15" ry="52" fill="#fffaf8"/><ellipse cx="150" cy="44" rx="7" ry="40" fill="#f7b6c8"/></g>
+      <g transform="rotate(18 210 96)"><ellipse cx="210" cy="40" rx="15" ry="52" fill="#fffaf8"/><ellipse cx="210" cy="44" rx="7" ry="40" fill="#f7b6c8"/><path d="M196 18 Q210 30 224 22" stroke="#efe1e5" stroke-width="3" fill="none"/></g>`;
+    case "devil": return `<path d="M132 104 Q112 82 122 54 Q130 78 150 92 Z" fill="#5d3b5e"/><path d="M228 104 Q248 82 238 54 Q230 78 210 92 Z" fill="#5d3b5e"/>
+      <path d="M126 70 Q130 82 142 90" stroke="#7d5580" stroke-width="2" fill="none"/><path d="M234 70 Q230 82 218 90" stroke="#7d5580" stroke-width="2" fill="none"/>`;
+    case "unicorn": return `<path d="M168 98 L180 22 L192 98 Z" fill="#ffe7a6"/><path d="M170 86 L190 80 M172 70 L188 64 M175 52 L186 47" stroke="#f3c96a" stroke-width="3" stroke-linecap="round"/>
+      <path d="M180 22 L183 40" stroke="#fff" stroke-width="2" opacity=".7"/>`;
+  }
+  return "";
+}
+
+function headbandSvg(id) {
+  switch (id) {
+    case "sport": return `<path d="M100 132 Q180 92 260 132" stroke="#8fd8c4" stroke-width="20" fill="none" stroke-linecap="round"/>
+      <path d="M100 132 Q180 92 260 132" stroke="#fff" stroke-width="4" fill="none" stroke-dasharray="0" opacity=".9" transform="translate(0 -1)"/>
+      <path d="M170 106 l7 -6 l3 7 l7 -6" stroke="#e8505b" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case "maid": {
+      let fr = "";
+      for (let i = 0; i <= 10; i++) {
+        const t = i / 10, x = lerp(108, 252, t), y = 112 - Math.sin(Math.PI * t) * 34;
+        fr += `<circle cx="${x.toFixed(1)}" cy="${(y - 8).toFixed(1)}" r="9" fill="#fff" stroke="#f1e2e6" stroke-width="1.5"/>`;
+      }
+      return `${fr}<path d="M104 116 Q180 70 256 116" stroke="#3b2f35" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M104 116 Q180 70 256 116" stroke="#fff" stroke-width="1.5" fill="none" stroke-dasharray="3 4"/>`;
+    }
+    case "knit": return `<path d="M98 140 Q180 64 262 140" stroke="#f6b8c8" stroke-width="13" fill="none" stroke-linecap="round"/>
+      <path d="M98 140 Q180 64 262 140" stroke="#e993ab" stroke-width="13" fill="none" stroke-dasharray="3 5" opacity=".6"/>`;
+    case "pearlband": {
+      let p = `<path d="M98 140 Q180 64 262 140" stroke="#e8d6c8" stroke-width="3" fill="none"/>`;
+      for (let i = 0; i <= 14; i++) {
+        const t = i / 14, u = 1 - t;
+        const x = u * u * 98 + 2 * u * t * 180 + t * t * 262, y = u * u * 140 + 2 * u * t * 64 + t * t * 140;
+        p += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5" fill="#fffaf2" stroke="#ead9cc" stroke-width="1"/><circle cx="${(x - 1.6).toFixed(1)}" cy="${(y - 1.6).toFixed(1)}" r="1.6" fill="#fff"/>`;
+      }
+      return p;
+    }
+  }
+  return "";
+}
+
+function bowSvg(id, x = 256, y = 96, s = 1) {
+  const styles = {
+    red:    { a: "#e8505b", b: "#c63c47", knot: "#f07a83", tail: true },
+    satin:  { a: "#f6b8c8", b: "#e993ab", knot: "#fbd3de", tail: true, long: true },
+    plaid:  { a: "#c9a0dc", b: "#a77fc0", knot: "#e0c3ec", tail: true, plaid: true },
+    velvet: { a: "#3b2f35", b: "#241c20", knot: "#5a4a52", tail: false }
+  }[id];
+  if (!styles) return "";
+  const tl = styles.long ? 52 : 30;
+  const plaid = styles.plaid ? `<path d="M-30 -10 L-8 2 M-30 4 L-8 -8 M30 -10 L8 2 M30 4 L8 -8" stroke="#fff" stroke-width="2" opacity=".5"/>` : "";
+  return `<g transform="translate(${x} ${y}) scale(${s}) rotate(14)">
+    ${styles.tail ? `<path d="M-4 4 L-16 ${tl} L-6 ${tl - 6} L0 ${tl} L2 6 Z" fill="${styles.b}"/><path d="M4 4 L16 ${tl} L8 ${tl - 7} L2 ${tl - 2} L-1 6 Z" fill="${styles.a}"/>` : ""}
+    <path d="M0 0 C-14 -22 -38 -18 -34 0 C-38 18 -14 22 0 0 Z" fill="${styles.a}"/>
+    <path d="M0 0 C14 -22 38 -18 34 0 C38 18 14 22 0 0 Z" fill="${styles.a}"/>
+    <path d="M0 0 C-12 -8 -26 -6 -28 0 C-24 4 -12 6 0 0 Z" fill="${styles.b}" opacity=".7"/>
+    <path d="M0 0 C12 -8 26 -6 28 0 C24 4 12 6 0 0 Z" fill="${styles.b}" opacity=".7"/>
+    ${plaid}
+    <rect x="-7" y="-9" width="14" height="18" rx="6" fill="${styles.knot}"/>
+  </g>`;
+}
+
+function pinSvg(id) {
+  switch (id) {
+    case "star": return `<g transform="translate(122 128) rotate(-25)"><rect x="-18" y="-3" width="36" height="6" rx="3" fill="#ffd36e"/>
+      <path d="M8 -12 l3.5 7.5 l8 1 l-6 5.5 l1.6 8 l-7.1 -4 l-7.1 4 l1.6 -8 l-6 -5.5 l8 -1 Z" fill="#ffd36e" stroke="#f0b93e" stroke-width="1"/></g>`;
+    case "cherry": return `<g transform="translate(120 130) rotate(-20)"><rect x="-16" y="-2.5" width="30" height="5" rx="2.5" fill="#e8505b"/>
+      <path d="M6 -2 Q8 -16 16 -18 M6 -2 Q14 -10 22 -10" stroke="#5c9a6a" stroke-width="2" fill="none"/><circle cx="4" cy="6" r="7" fill="#e8505b"/><circle cx="18" cy="2" r="7" fill="#d93f4b"/>
+      <circle cx="2" cy="4" r="2" fill="#fff" opacity=".7"/><circle cx="16" cy="0" r="2" fill="#fff" opacity=".7"/></g>`;
+    case "pearlpin": return `<g transform="translate(120 122) rotate(-28)"><rect x="-20" y="-2" width="40" height="4" rx="2" fill="#e8d6c8"/>${[-14, -5, 4, 13].map((x) => `<circle cx="${x}" cy="0" r="4.2" fill="#fffaf2" stroke="#ead9cc"/>`).join("")}</g>
+      <g transform="translate(126 140) rotate(-28)"><rect x="-18" y="-2" width="36" height="4" rx="2" fill="#e8d6c8"/>${[-11, -2, 7].map((x) => `<circle cx="${x}" cy="0" r="4.2" fill="#fffaf2" stroke="#ead9cc"/>`).join("")}</g>`;
+    case "heart": return `<g transform="translate(122 128) rotate(-18)"><path d="M-16 -6 L16 -6 L12 6 L-16 6 Z" fill="#f6b8c8"/>
+      <path d="M0 -10 C-6 -18 -16 -10 -8 -2 L0 6 L8 -2 C16 -10 6 -18 0 -10 Z" fill="#e8505b" transform="translate(4 2) scale(.9)"/></g>`;
+  }
+  return "";
+}
+
+function decoSvg(id) {
+  switch (id) {
+    case "daisy": return [[240, 112, 1], [254, 128, .8], [232, 130, .7]].map(([x, y, s]) => {
+      let p = "";
+      for (let i = 0; i < 8; i++) p += `<ellipse cx="0" cy="-7" rx="3" ry="6" fill="#fff" transform="rotate(${i * 45})"/>`;
+      return `<g transform="translate(${x} ${y}) scale(${s})">${p}<circle r="4.5" fill="#ffd36e"/></g>`;
+    }).join("");
+    case "strawberry": return `<g transform="translate(272 168)"><path d="M-10 -14 Q0 -20 10 -14" stroke="#e8505b" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M-9 -6 Q-11 10 0 16 Q11 10 9 -6 Q0 -10 -9 -6 Z" fill="#e8505b"/><path d="M-8 -7 L-4 -12 L0 -8 L4 -12 L8 -7 Z" fill="#6fb37f"/>
+      ${[[-4, 0], [3, -1], [0, 7], [-5, 8], [5, 6]].map(([a, b]) => `<ellipse cx="${a}" cy="${b}" rx="1" ry="1.5" fill="#ffe08a"/>`).join("")}</g>`;
+    case "chain": {
+      let p = "";
+      for (let i = 0; i <= 16; i++) {
+        const t = i / 16, x = lerp(110, 250, t), y = 150 + Math.sin(Math.PI * t) * -60 + Math.sin(Math.PI * t * 4) * 4;
+        p += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${i % 4 === 0 ? 4.5 : 2.6}" fill="#fffaf2" stroke="#ead9cc" stroke-width=".8"/>`;
+      }
+      return p;
+    }
+  }
+  return "";
+}
+
+function frontHead(expr, acc, H, t = 0, withTail = true) {
+  const sway = Math.sin(t / 700) * 4;
+  const tail = withTail ? `<g transform="rotate(${sway.toFixed(2)} 210 80)">
+      <path d="M178 96 C214 30 300 46 294 140 C290 210 316 262 300 324 C276 266 254 206 240 152 C230 118 206 102 186 104 Z" fill="${H.base}"/>
+      <path d="M232 70 C286 66 296 130 290 180 C288 220 300 260 296 300" stroke="${H.light}" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+      <path d="M220 86 C258 96 270 150 272 200" stroke="${H.dark}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".5"/>
+    </g>` : "";
+  const deco = acc || {};
+  return `${tail}
+    <path d="M40 440 Q50 330 150 312 L210 312 Q310 330 320 440 Z" fill="${SHIRT}"/>
+    <path d="M150 312 L180 340 L210 312" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="156" y="240" width="48" height="80" rx="18" fill="${SKIN_D}"/>
+    <ellipse cx="102" cy="196" rx="12" ry="17" fill="${SKIN}"/><ellipse cx="258" cy="196" rx="12" ry="17" fill="${SKIN}"/>
+    <ellipse cx="180" cy="186" rx="78" ry="84" fill="${SKIN}"/>
+    <path d="M100 176 Q96 92 180 90 Q264 92 260 176 Q252 130 214 118 Q180 112 146 118 Q108 130 100 176 Z" fill="${H.base}"/>
+    <path d="M118 140 Q140 104 180 100" stroke="${H.light}" stroke-width="5" fill="none" stroke-linecap="round" opacity=".6"/>
+    <path d="M146 118 Q156 140 150 158 Q168 136 172 116 Q182 142 196 152 Q196 132 204 118 Q222 132 232 150 Q236 128 214 118 Q180 110 146 118 Z" fill="${H.base}"/>
+    <path d="M180 90 Q176 104 180 114" stroke="${H.dark}" stroke-width="2" fill="none" opacity=".5"/>
+    ${deco.ears ? earsSvg(deco.ears, H) : ""}
+    ${deco.deco === "chain" ? decoSvg("chain") : ""}
+    ${deco.headband ? headbandSvg(deco.headband) : ""}
+    ${face(expr)}
+    ${deco.pin ? pinSvg(deco.pin) : ""}
+    ${deco.deco && deco.deco !== "chain" ? decoSvg(deco.deco) : ""}
+    ${deco.bow ? bowSvg(deco.bow) : ""}`;
+}
+
+function frontView(t) {
+  const H = HAIR_COLORS[state.hair];
+  return `<defs><radialGradient id="bgGlow2" cx="50%" cy="35%" r="65%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#ffeef2"/></radialGradient></defs>
+    <rect width="360" height="440" fill="url(#bgGlow2)"/>
+    <circle cx="56" cy="70" r="30" fill="#ffe1e8"/><circle cx="318" cy="380" r="40" fill="#e3f6f0"/>
+    ${[[52, 300], [300, 110], [70, 200]].map(([x, y], i) => `<path d="M${x} ${y - 6} l2 4 l4 2 l-4 2 l-2 4 l-2 -4 l-4 -2 l4 -2 Z" fill="${i % 2 ? "#8fd8c4" : "#f6b8c8"}"/>`).join("")}
+    ${frontHead(state.expr, state.acc, H, t)}`;
+}
+
+function avatarSvg() {
+  const H = HAIR_COLORS[state.hair];
+  return `<svg viewBox="80 80 200 200"><rect x="80" y="80" width="200" height="200" fill="#fff5f6"/>${frontHead(state.expr, null, H, 0, false)}</svg>`;
+}
+
+/* ---------- 渲染 ---------- */
+const $ = (s) => document.querySelector(s);
+let lastAvatar = "";
+function draw(t = performance.now()) {
+  $("#stage").innerHTML = state.step === 4 ? frontView(t) : backView(t);
+  const key = state.expr + state.hair + state.step;
+  if (key !== lastAvatar) {
+    lastAvatar = key;
+    $("#avatar").innerHTML = avatarSvg();
+  }
+  $("#avatar").style.display = state.step === 4 ? "none" : "";
+  $("#avatar").classList.toggle("shake", state.expr === "pain");
+}
+
+function renderSteps() {
+  document.querySelectorAll("#steps div").forEach((d) => {
+    const s = +d.dataset.s;
+    d.classList.toggle("on", s === state.step);
+    d.classList.toggle("done", s < state.step);
+  });
+}
+
+function renderColors() {
+  $("#colors").innerHTML = HAIR_COLORS.map((c, i) =>
+    `<button class="${i === state.hair ? "on" : ""}" data-color="${i}" style="background:linear-gradient(135deg, ${c.light}, ${c.dark})" aria-label="${c.name}"><span>${c.name}</span></button>`).join("");
+}
+
+function renderPanel() {
+  const p = $("#panel");
+  if (state.step === 1) {
+    p.innerHTML = `<div class="tip"><i>1</i>按住头发往下划</div>
+      <div class="sub">划到的发丝会被拢到头顶。慢慢划更整齐，划太快会留下碎发。</div>
+      <div class="bar"><i id="prog" style="width:${state.gathered / N * 100}%"></i></div>
+      <div class="bar-label"><span>已拢起</span><span id="progText">${state.gathered} / ${N} 束</span></div>`;
+  } else if (state.step === 2) {
+    p.innerHTML = `<div class="tip"><i>2</i>在发根处画圈套皮筋</div>
+      <div class="sub">按住头顶发根旁边，绕着它画圈，绕满一圈半就套好了。</div>
+      <div class="bar"><i id="prog" style="width:${state.ring * 100}%;background:#e8505b"></i></div>
+      <div class="bar-label"><span>绕圈进度</span><span id="progText">${Math.round(state.ring * 100)}%</span></div>`;
+  } else if (state.step === 3) {
+    const [a, b] = state.zone;
+    p.innerHTML = `<div class="tip"><i>3</i>长按收紧，在绿色区域松手</div>
+      <div class="sub">太松马尾会塌；太紧她会皱眉，收到头还会喊痛。</div>
+      <div class="gauge"><div class="zone" style="left:${a * 100}%;width:${(b - a) * 100}%"></div><div class="danger" style="width:12%"></div><div class="needle" id="needle" style="left:${state.tension * 100}%"></div></div>
+      <div class="bar-label"><span>松</span><span>刚刚好</span><span>紧</span></div>
+      <button class="hold" id="holdBtn">按住收紧</button>`;
+  } else {
+    const cat = ACC[state.tab];
+    p.innerHTML = `<div class="tip"><i>4</i>挑发饰，搭配一下</div>
+      <div class="sub">每一类可以选一件，再点一次取下。</div>
+      <div class="tabs">${Object.entries(ACC).map(([k, v]) => `<button class="${k === state.tab ? "on" : ""}" data-tab="${k}">${v.name}${state.acc[k] ? "<em>●</em>" : ""}</button>`).join("")}</div>
+      <div class="items">
+        <button class="item none ${state.acc[state.tab] ? "" : "on"}" data-item=""><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="14" fill="none" stroke="#c3aab4" stroke-width="3"/><path d="M14 34 L34 14" stroke="#c3aab4" stroke-width="3"/></svg><small>不戴</small></button>
+        ${cat.items.map((it) => `<button class="item ${state.acc[state.tab] === it.id ? "on" : ""}" data-item="${it.id}">${itemPreview(state.tab, it.id)}<small>${it.name}</small></button>`).join("")}
+      </div>
+      <div class="row"><button class="btn soft" id="randomBtn">随机搭配</button><button class="btn primary" id="doneBtn">完成造型</button></div>`;
+  }
+}
+
+function itemPreview(cat, id) {
+  const H = HAIR_COLORS[state.hair];
+  const views = {
+    headband: "86 50 188 110", bow: "212 60 90 90", pin: "88 92 70 70", deco: { daisy: "214 92 60 60", strawberry: "244 138 56 56", chain: "100 80 160 100" }, ears: "90 10 180 130"
+  };
+  let vb = views[cat];
+  if (typeof vb === "object") vb = vb[id];
+  let inner = "";
+  if (cat === "headband") inner = `<path d="M100 176 Q96 92 180 90 Q264 92 260 176 Z" fill="${H.base}" opacity=".25"/>` + headbandSvg(id);
+  if (cat === "bow") inner = bowSvg(id);
+  if (cat === "pin") inner = `<circle cx="122" cy="128" r="28" fill="${H.base}" opacity=".2"/>` + pinSvg(id);
+  if (cat === "deco") inner = (id === "chain" ? `<path d="M100 176 Q96 92 180 90 Q264 92 260 176 Z" fill="${H.base}" opacity=".25"/>` : "") + decoSvg(id);
+  if (cat === "ears") inner = `<path d="M100 176 Q96 92 180 90 Q264 92 260 176 Z" fill="${H.base}" opacity=".35"/>` + earsSvg(id, H);
+  return `<svg viewBox="${vb}">${inner}</svg>`;
+}
+
+function updateProgress() {
+  const prog = $("#prog"), txt = $("#progText");
+  if (state.step === 1 && prog) { prog.style.width = `${state.gathered / N * 100}%`; txt.textContent = `${state.gathered} / ${N} 束`; }
+  if (state.step === 2 && prog) { prog.style.width = `${state.ring * 100}%`; txt.textContent = `${Math.round(state.ring * 100)}%`; }
+  if (state.step === 3) { const n = $("#needle"); if (n) n.style.left = `${state.tension * 100}%`; }
+}
+
+let sayTimer;
+function say(text, ms = 1400) {
+  const el = $("#say");
+  el.textContent = text;
+  el.classList.add("show");
+  clearTimeout(sayTimer);
+  sayTimer = setTimeout(() => el.classList.remove("show"), ms);
+}
+function setExpr(e) { if (state.expr !== e) { state.expr = e; } }
+
+/* ---------- 交互 ---------- */
+function svgPoint(e) {
+  const svg = $("#stage");
+  const pt = svg.createSVGPoint();
+  pt.x = e.clientX; pt.y = e.clientY;
+  const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+  return [p.x, p.y];
+}
+
+let pointer = null;
+function onDown(e) {
+  if (state.step === 4) return;
+  $("#stage").setPointerCapture(e.pointerId);
+  const [x, y] = svgPoint(e);
+  pointer = { x, y, t: performance.now() };
+  if (state.step === 2) state.lastAng = Math.atan2(y - B.y, x - B.x);
+  if (state.step === 3) startHold();
+}
+function onMove(e) {
+  if (!pointer) return;
+  const [x, y] = svgPoint(e);
+  const now = performance.now();
+  const dt = Math.max(1, now - pointer.t);
+  const dist = Math.hypot(x - pointer.x, y - pointer.y);
+  const speed = dist / dt;
+  if (state.step === 1) swipeStrands(pointer.x, pointer.y, x, y, speed);
+  if (state.step === 2) windBand(x, y);
+  pointer = { x, y, t: now };
+}
+function onUp() {
+  pointer = null;
+  if (state.step === 2) state.lastAng = null;
+  if (state.step === 3) endHold();
+}
+
+function swipeStrands(x0, y0, x1, y1, speed) {
+  if (y1 < y0 - 2) return;
+  let hit = 0;
+  const steps = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 6));
+  for (const st of state.strands) {
+    if (st.target) continue;
+    const P = strandPoints(st.i, st.g);
+    let near = false;
+    for (let k = 0; k <= steps && !near; k++) {
+      const px = lerp(x0, x1, k / steps), py = lerp(y0, y1, k / steps);
+      for (let tt = 0; tt <= 1; tt += .08) {
+        const [bx, by] = bez(P, tt);
+        if ((bx - px) ** 2 + (by - py) ** 2 < 15 * 15) { near = true; break; }
+      }
+    }
+    if (near) {
+      st.target = 1;
+      st.neat = speed > 1.6 ? .55 : 1;
+      hit++;
+      state.gathered++;
+    }
+  }
+  if (hit) {
+    setExpr(speed > 1.6 ? "frown" : "happy");
+    if (speed > 1.6) say("轻一点嘛～");
+    clearTimeout(swipeStrands._t);
+    swipeStrands._t = setTimeout(() => setExpr("calm"), 600);
+    updateProgress();
+    if (state.gathered >= N) {
+      say("拢好啦！");
+      setTimeout(() => goStep(2), 700);
+    }
+  }
+}
+
+function windBand(x, y) {
+  const d = Math.hypot(x - B.x, y - B.y);
+  if (d < 12 || d > 120) { state.lastAng = null; return; }
+  const a = Math.atan2(y - B.y, x - B.x);
+  if (state.lastAng != null) {
+    let da = a - state.lastAng;
+    if (da > Math.PI) da -= 2 * Math.PI;
+    if (da < -Math.PI) da += 2 * Math.PI;
+    state.ringAcc += da;
+    state.ring = Math.min(1, Math.abs(state.ringAcc) / (3 * Math.PI));
+    updateProgress();
+    if (state.ring >= 1) {
+      pointer = null;
+      say("套上啦，接下来收紧");
+      setTimeout(() => goStep(3), 700);
+    }
+  }
+  state.lastAng = a;
+}
+
+function startHold() {
+  if (state.released) return;
+  state.holding = true;
+  const b = $("#holdBtn"); if (b) b.classList.add("pressing");
+}
+function endHold() {
+  const b = $("#holdBtn"); if (b) b.classList.remove("pressing");
+  if (!state.holding || state.released) return;
+  state.holding = false;
+  if (state.tension < .03) return;
+  finishTighten(false);
+}
+
+function finishTighten(autoFail) {
+  state.released = true;
+  state.holding = false;
+  const t = state.tension;
+  const [a, b] = state.zone;
+  const c = (a + b) / 2;
+  let feel, verdict;
+  if (autoFail) { feel = 10; verdict = "pain"; setExpr("pain"); say("好痛好痛！太紧啦", 1800); }
+  else if (t < a) {
+    feel = Math.round(30 + 40 * (t / a));
+    verdict = "loose";
+    setExpr("sad"); say("哎呀，马尾塌了…", 1800);
+    collapseAnim();
+  } else if (t <= b) {
+    feel = Math.round(100 - Math.abs(t - c) / ((b - a) / 2) * 15);
+    verdict = "good";
+    setExpr("happy"); say("刚刚好！好精神～", 1800);
+  } else {
+    feel = Math.round(Math.max(20, 75 - (t - b) / (1 - b) * 55));
+    verdict = "tight";
+    setExpr("frown"); say("有点紧…不过还行", 1800);
+  }
+  const complete = Math.round(state.strands.reduce((s, x) => s + x.neat, 0) / N * 100);
+  const total = Math.round(complete * .4 + feel * .6);
+  state.scores = { complete, feel, total, verdict };
+  setTimeout(showResult, 1300);
+}
+
+function collapseAnim() {
+  const start = performance.now();
+  const victims = [1, 4, 8, 13, 17];
+  (function step(now) {
+    const k = Math.min(1, (now - start) / 700);
+    state.collapse = k;
+    victims.forEach((i) => { state.strands[i].g = 1 - .45 * k; state.strands[i].target = 1 - .45 * k; });
+    if (k < 1) requestAnimationFrame(step);
+  })(start);
+}
+
+function goStep(n) {
+  state.step = n;
+  if (n === 4) { setExpr("happy"); state.collapse = 0; state.strands.forEach((s) => { s.g = 1; s.target = 1; }); }
+  else setExpr("calm");
+  renderSteps(); renderPanel(); draw();
+}
+
+function commentFor(s) {
+  if (s.verdict === "pain") return "太紧啦，头皮在抗议";
+  if (s.verdict === "loose") return s.total >= 60 ? "能出门，就是有点松散" : "马尾塌了…要不再来一次？";
+  if (s.verdict === "tight") return s.total >= 60 ? "精神是精神，就是有点勒" : "勒得有点疼，下次轻一点";
+  if (s.total >= 90) return "发型师本师！一丝不苟";
+  if (s.total >= 75) return "很精神的马尾～";
+  return "收得刚好，下次拢发再慢一点";
+}
+
+function showResult() {
+  const s = state.scores;
+  openModal(`<h2>马尾评分</h2>
+    <div class="score">${s.total}<small> 分</small></div>
+    <div class="comment">${commentFor(s)}</div>
+    <div class="metric"><div>发束完整度 <span>${s.complete} 分 · 占 40%</span></div><div class="bar"><i style="width:${s.complete}%"></i></div></div>
+    <div class="metric"><div>收紧手感 <span>${s.feel} 分 · 占 60%</span></div><div class="bar"><i style="width:${s.feel}%;background:#e8505b"></i></div></div>
+    <div class="row"><button class="btn soft" id="againBtn">再扎一次</button><button class="btn primary" id="dressBtn">去戴发饰</button></div>`);
+}
+
+function styleName(a) {
+  if (a.ears === "devil") return "小恶魔奇幻系";
+  if (a.ears === "unicorn") return "独角兽梦幻系";
+  if (a.headband === "maid") return a.ears === "cat" ? "猫耳女仆咖啡店" : "女仆咖啡店限定";
+  if (a.headband === "sport") return "元气运动系";
+  if (a.ears && a.bow) return "甜心兽耳系";
+  if (a.ears) return "毛茸茸兽耳系";
+  if (a.headband === "pearlband" || a.pin === "pearlpin" || a.deco === "chain") return "温柔名媛风";
+  if (a.bow === "velvet") return "复古丝绒风";
+  if (a.bow || a.deco === "strawberry" || a.pin === "cherry") return "甜系少女风";
+  if (a.deco === "daisy") return "田园小清新";
+  if (a.pin || a.headband) return "日常通勤风";
+  return "清爽素马尾";
+}
+
+function showFinal() {
+  const H = HAIR_COLORS[state.hair];
+  const worn = Object.entries(state.acc).filter(([, v]) => v).map(([k, v]) => ACC[k].items.find((i) => i.id === v).name);
+  openModal(`<svg class="final-svg" viewBox="40 0 280 360">${frontHead("happy", state.acc, H, 0)}</svg>
+    <div class="style-name">${styleName(state.acc)}</div>
+    <h2>今日造型完成</h2>
+    <div class="worn">${H.name}马尾${worn.length ? " · " + worn.join(" · ") : " · 不戴发饰"}</div>
+    <div class="worn">马尾得分 <b style="color:#e8505b">${state.scores ? state.scores.total : "-"}</b> 分 · ${state.scores ? commentFor(state.scores) : ""}</div>
+    <div class="row"><button class="btn soft" id="backDress">再换换</button><button class="btn primary" id="againBtn">再扎一个</button></div>`);
+}
+
+function openModal(html) { $("#card").innerHTML = html; $("#modal").classList.add("show"); }
+function closeModal() { $("#modal").classList.remove("show"); }
+
+/* ---------- 循环 ---------- */
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(.05, (now - last) / 1000);
+  last = now;
+  let moving = false;
+  for (const st of state.strands) {
+    if (st.g < st.target) { st.g = Math.min(st.target, st.g + dt * 2.6); moving = true; }
+  }
+  if (state.step === 3 && state.holding && !state.released) {
+    state.tension = Math.min(1, state.tension + dt * (.26 + state.tension * .2));
+    const [, b] = state.zone;
+    if (state.tension > b + .1) { setExpr("frown"); if (!loop._warned) { say("有点紧了…"); loop._warned = true; } }
+    else if (state.tension >= state.zone[0]) setExpr("happy");
+    if (state.tension >= 1) finishTighten(true);
+    updateProgress();
+  }
+  draw(now);
+  requestAnimationFrame(loop);
+}
+
+/* ---------- 事件 ---------- */
+const stage = $("#stage");
+stage.addEventListener("pointerdown", onDown);
+stage.addEventListener("pointermove", onMove);
+stage.addEventListener("pointerup", onUp);
+stage.addEventListener("pointercancel", onUp);
+document.addEventListener("pointerdown", (e) => { if (e.target.closest("#holdBtn")) { e.preventDefault(); startHold(); } });
+document.addEventListener("pointerup", (e) => { if (state.step === 3 && state.holding) endHold(); });
+document.addEventListener("pointercancel", () => { if (state.step === 3 && state.holding) endHold(); });
+
+document.addEventListener("click", (e) => {
+  const t = e.target;
+  const col = t.closest("[data-color]");
+  if (col) { state.hair = +col.dataset.color; lastAvatar = ""; renderColors(); if (state.step === 4) renderPanel(); return; }
+  const tab = t.closest("[data-tab]");
+  if (tab) { state.tab = tab.dataset.tab; return renderPanel(); }
+  const item = t.closest("[data-item]");
+  if (item) {
+    const id = item.dataset.item || null;
+    state.acc[state.tab] = state.acc[state.tab] === id ? null : id;
+    return renderPanel();
+  }
+  if (t.closest("#randomBtn")) {
+    for (const k of Object.keys(ACC)) state.acc[k] = Math.random() < .6 ? ACC[k].items[Math.floor(Math.random() * ACC[k].items.length)].id : null;
+    return renderPanel();
+  }
+  if (t.closest("#doneBtn")) return showFinal();
+  if (t.closest("#backDress")) return closeModal();
+  if (t.closest("#dressBtn")) { closeModal(); return goStep(4); }
+  if (t.closest("#againBtn") || t.closest("#resetBtn")) { loop._warned = false; return reset(); }
+});
+
+reset();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
