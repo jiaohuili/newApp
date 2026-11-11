@@ -168,10 +168,34 @@
   .sheet h3 span { font-size: 12px; font-weight: 500; color: var(--sub); }
   .row { display: flex; gap: 10px; margin-bottom: 10px; font-size: 13px; line-height: 1.6; color: #4a403a; }
   .row em { flex: none; font-style: normal; font-size: 11px; font-weight: 700; color: #fff; width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.1; }
-  .row:nth-child(2) em { background: #e8473c; }
-  .row:nth-child(3) em { background: #f0a04b; }
-  .row:nth-child(4) em { background: #5a9e6f; }
-  .row:nth-child(5) em { background: #5b7fc7; }
+  .row.pose em { background: #e8473c; }
+  .row.cam em { background: #f0a04b; }
+  .row.tip em { background: #5a9e6f; }
+  .row.fit em { background: #5b7fc7; }
+  .phone-box { margin: 4px 0 12px; padding: 12px; border-radius: 14px; background: #f7f2ee; display: flex; gap: 12px; align-items: center; }
+  .phone-box .tilt { flex: none; width: 64px; height: 64px; border-radius: 12px; background: #fff; padding: 4px; }
+  .phone-box .tilt svg { width: 100%; height: 100%; display: block; }
+  .phone-box .specs { flex: 1; min-width: 0; }
+  .phone-box .specs b { display: block; font-size: 13px; margin-bottom: 6px; }
+  .spec-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .spec-chips span { font-size: 11px; padding: 3px 7px; border-radius: 6px; background: #fff; color: #4a403a; border: 1px solid #eadfd8; white-space: nowrap; }
+  .spec-chips span.k { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .row.phone em { background: #8a62c9; }
+  .card .lens {
+    position: absolute; left: 8px; top: 50px; z-index: 2; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px;
+    background: rgba(255,255,255,.88); color: var(--ink);
+  }
+  .tips-panel summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; }
+  .tips-panel summary::-webkit-details-marker { display: none; }
+  .tips-panel summary span { font-size: 11px; font-weight: 500; color: var(--sub); }
+  .tips-panel summary span::after { content: " ▾"; }
+  .tips-panel[open] summary span::after { content: " ▴"; }
+  .tips-list { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .tips-list li { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.55; color: #4a403a; }
+  .tips-list li b { flex: none; min-width: 64px; color: var(--ink); }
+  .lens-guide { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+  .lens-guide div { background: var(--chip); border-radius: 10px; padding: 8px 6px; text-align: center; font-size: 11px; color: #5d524b; line-height: 1.4; }
+  .lens-guide div b { display: block; font-size: 15px; color: var(--ink); }
   .actions { display: flex; gap: 10px; margin-top: 14px; }
   .fav { width: 50px; height: 46px; border-radius: 14px; border: 1.5px solid #f2c7c2; color: var(--red); font-size: 20px; flex: none; }
   .fav.on { background: #fdecea; }
@@ -232,12 +256,30 @@
     </div>
   </section>
 
+  <details class="panel tips-panel">
+    <summary>拍之前，手机先这样设置<span>展开</span></summary>
+    <div class="lens-guide">
+      <div><b>0.5x</b>超广角<br>拉长腿、拍全景<br>人别放边缘</div>
+      <div><b>1x</b>主摄<br>画质最好<br>大多数姿势用它</div>
+      <div><b>2x/3x</b>人像焦段<br>半身、特写<br>脸不变形</div>
+    </div>
+    <ul class="tips-list">
+      <li><b>网格线</b>设置 → 相机 → 打开“网格”和“水平仪”，人放在三分线上，地平线别歪。</li>
+      <li><b>锁对焦曝光</b>长按屏幕上的人脸，出现“AE/AF 锁定”后，上下滑动调亮度。</li>
+      <li><b>曝光</b>海边、窗边这种亮背景往下拉 -0.3 到 -0.7；室内偏暗往上拉 +0.3。</li>
+      <li><b>人像模式</b>半身和特写用，光圈 f/2.8 左右最自然；数值调到 f/1.4 这种太小的档，虚化过重，头发边缘容易被抠坏。</li>
+      <li><b>连拍/实况</b>转圈、奔跑、踢水这类动态姿势，按住快门连拍或开实况照片，事后挑帧。</li>
+      <li><b>画质</b>光线好时开高像素（4800 万 / ProRAW），暗光关掉，用默认模式更干净。</li>
+      <li><b>别忘了</b>拍前擦一下镜头；美颜和滤镜后期再加，原片留白更好修。</li>
+    </ul>
+  </details>
+
   <p class="pool-note" id="poolNote"></p>
   <main class="grid" id="grid"></main>
 
   <p class="footer-note">
     示范图均为 AI 生成内容（含AI生成内容），人物为虚拟形象，仅作姿势参考。<br />
-    右下角小图是机位示意：圆点是人，相机图标是拍摄位置。
+    右下角小图是机位示意：圆点是人，相机图标是拍摄位置；左上角是推荐镜头倍数。
   </p>
 </div>
 
@@ -458,7 +500,87 @@ const POSES = [
     camera: "在身后平视拍，人物剪影压在画面下方。",
     tip: "对着日落方向拍剪影，曝光对准天空。",
     fit: "海边、山顶，有日落的地方。" }
-].map((p, i) => ({ ...p, id: i + 1, img: `images/p${String(i + 1).padStart(2, "0")}.jpg` }));
+];
+
+// 每个姿势的手机设置：[方向, 倾角(°，负数=镜头朝下、正数=朝上、-90=屏幕朝上平举), 镜头, 模式, 曝光, 说明]
+const PHONE = [
+  ["竖拍", 0, "2x", "人像模式", "-0.3", "长按脸锁定对焦，再往下拉曝光，防止窗外过曝。"],
+  ["竖拍", -45, "1x", "人像模式", "-0.3", "离杯子 30cm 左右，点拉花对焦，背景自然虚化。"],
+  ["竖拍", 0, "1x", "照片", "0", "手机放在腰部高度保持竖直，打开网格线，让人站在三分线上。"],
+  ["竖拍", 0, "1x", "连拍", "0", "按住快门连拍回头那一下，或开实况照片事后挑帧。"],
+  ["竖拍", 0, "2x", "人像模式", "+0.3", "室内偏暗适当加曝光；光圈 f/2.8 左右，虚化更自然。"],
+  ["竖拍", 0, "2x", "人像模式", "0", "点杯子对焦，画面上沿切到鼻尖下方。"],
+  ["竖拍", 0, "2x", "人像模式", "0", "退远一点用 2x，回眸时脸不会被拉变形。"],
+  ["竖拍", 10, "0.5x", "照片", "-0.7", "手机贴近地面微微上仰，降曝光保住天空和海的颜色。"],
+  ["横拍", 0, "0.5x", "照片", "-0.3", "横拍留出左右的海；超广角别把人放在画面边缘。"],
+  ["竖拍", 0, "1x", "人像模式", "+0.3", "逆光时点脸测光并加曝光，或打开 HDR。"],
+  ["竖拍", 0, "1x", "连拍", "-0.3", "开连拍抓水花；光线好时别用夜景模式，快门才够快。"],
+  ["竖拍", 0, "1x", "实况", "-0.3", "边走边拍，开实况照片事后挑步子最好看的一帧。"],
+  ["竖拍", 0, "1x", "照片", "-0.3", "海边光线强，点草帽对焦并降一点曝光。"],
+  ["竖拍", 5, "1x", "连拍", "-0.3", "低机位微微上仰，跟着人平移手机，连拍挑头发飞起来的一张。"],
+  ["竖拍", 0, "1x", "照片", "0", "手机在腰部高度保持水平，开水平仪，别让建筑歪掉。"],
+  ["竖拍", 10, "0.5x", "连拍", "0", "手机靠近地面微微上仰，0.5x 拉长腿和斑马线。"],
+  ["竖拍", 0, "1x", "照片", "0", "手机和墙面保持平行，竖线不歪，人放在画面正中。"],
+  ["竖拍", 0, "2x", "实况", "0", "像抓拍一样站远用 2x，开实况挑动作最自然的一帧。"],
+  ["竖拍", 0, "2x", "人像模式", "+0.3", "逆光加一点曝光，发丝光会更明显。"],
+  ["竖拍", 0, "2x", "照片", "-0.3", "站远用 2x 压缩背景；傍晚降曝光，保留灯光氛围。"],
+  ["竖拍", -15, "1x", "人像模式", "0", "手机举到胸口往下倾，脸会显小。"],
+  ["竖拍", -30, "0.5x", "照片", "0", "站着往下拍，0.5x 能把野餐布和道具都收进来。"],
+  ["竖拍", 0, "2x", "人像模式", "0", "对焦在眼睛上，2x 能把背景虚化成一片绿。"],
+  ["竖拍", -90, "1x", "照片", "0", "屏幕朝上平举在头顶正上方，用水平仪对准十字再拍。"],
+  ["竖拍", 20, "0.5x", "照片", "-0.3", "蹲低仰拍，0.5x 把树冠收进来，降曝光防止天空过曝。"],
+  ["竖拍", 0, "2x", "人像模式", "0", "对焦在花上，靠近拍，背景虚化。"],
+  ["竖拍", 5, "1x", "连拍", "0", "蹲低连拍，抓裙摆转到最圆的那一下。"],
+  ["竖拍", -5, "1x", "照片", "0", "手机挡在脸前，镜头稍微往下倾，腿显长；先擦干净镜子。"],
+  ["竖拍", 0, "0.5x", "照片", "0", "空间小时用 0.5x 才能拍进全身和镜子，手机保持竖直。"],
+  ["竖拍", 0, "1x", "人像模式", "0", "对焦在真人侧脸或镜中的脸，二选一。"],
+  ["竖拍", -5, "0.5x", "照片", "0", "电梯空间小用 0.5x，手机放胸口、略向下倾。"],
+  ["竖拍", 0, "1x", "人像模式", "+0.3", "室内偏暗适当加曝光，对焦在镜子里的脸。"],
+  ["竖拍", 0, "2x", "人像模式", "+0.3", "逆光拍轮廓，点脸加曝光；对焦在两人鼻尖中间。"],
+  ["竖拍", 0, "2x", "照片", "0", "站远一点用 2x，路面做引导线。"],
+  ["竖拍", 0, "2x", "人像模式", "0", "对焦在女生脸上，两人尽量在同一距离。"],
+  ["竖拍", 0, "0.5x", "连拍", "0", "男生单手拿手机，0.5x 能拍进牵着的手；开连拍。"],
+  ["竖拍", -30, "2x", "人像模式", "0", "对焦在戒指上，靠近拍细节。"],
+  ["竖拍", 0, "1x", "连拍", "0", "腰部高度连拍，抱起来那一刻的表情最自然。"],
+  ["横拍", 0, "1x", "照片", "-1.0", "点天空测光，曝光降到 -1，人物自然变成剪影。"]
+];
+
+POSES.forEach((p, i) => {
+  const [orient, tilt, lens, mode, ev, note] = PHONE[i];
+  Object.assign(p, {
+    id: i + 1,
+    img: `images/p${String(i + 1).padStart(2, "0")}.jpg`,
+    phone: { orient, tilt, lens, mode, ev, note }
+  });
+});
+
+function tiltLabel(t) {
+  if (t === -90) return "屏幕朝上平举";
+  if (t === 0) return "手机竖直不倾斜";
+  return t < 0 ? `镜头向下倾 ${-t}°` : `镜头向上仰 ${t}°`;
+}
+
+function evLabel(ev) {
+  return ev === "0" ? "曝光不调" : `曝光 ${ev}`;
+}
+
+function tiltSvg(ph) {
+  const t = ph.tilt;
+  const land = ph.orient === "横拍";
+  const h = land ? 14 : 26;
+  return `<svg viewBox="0 0 60 60" aria-label="手机角度：${tiltLabel(t)}">
+    <line x1="4" y1="54" x2="56" y2="54" stroke="#d9cdc5" stroke-width="1.5"/>
+    <line x1="22" y1="30" x2="56" y2="30" stroke="#eadfd8" stroke-width="1" stroke-dasharray="2 2"/>
+    <g transform="translate(22 30) rotate(${-t})">
+      <path d="M3 0 L32 -9 L32 9 Z" fill="#8a62c9" opacity=".18"/>
+      <line x1="3" y1="0" x2="28" y2="0" stroke="#8a62c9" stroke-width="1.6"/>
+      <path d="M28 -3 L33 0 L28 3 Z" fill="#8a62c9"/>
+      <rect x="-3" y="${-h / 2}" width="6" height="${h}" rx="1.6" fill="#2b2420"/>
+      <circle cx="3.5" cy="${-h / 2 + 4}" r="1.4" fill="#8a62c9"/>
+    </g>
+    <text x="4" y="10" font-size="8" fill="#8a7e76">${land ? "横" : "竖"} · ${t === -90 ? "90°↓" : t === 0 ? "0°" : (t < 0 ? `${-t}°↓` : `${t}°↑`)}</text>
+  </svg>`;
+}
 
 const H_LABEL = { low: "低机位", eye: "平视", high: "稍俯拍", top: "俯拍" };
 function angleLabel(a) {
@@ -526,6 +648,7 @@ function cardHtml(p) {
     <span class="tag scene">${p.scene}</span>
     ${p.noface ? '<span class="tag noface">不露脸</span>' : ""}
     <span class="ai-mark">AI生成</span>
+    <span class="lens">${p.phone.lens} · ${p.phone.orient}</span>
     <span class="title">${p.title}${state.favs.has(p.id) ? '<span class="heart">♥</span>' : ""}</span>
     <span class="mini-cam">${camSvg(p.cam)}</span>
   </button>`;
@@ -566,10 +689,24 @@ function openSheet(p) {
     </div>
     <div class="body">
       <h3 id="sheetTitle">${p.title}<span>No.${String(p.id).padStart(2, "0")}</span></h3>
-      <div class="row"><em>摆法</em><div>${p.pose}</div></div>
-      <div class="row"><em>机位</em><div>${p.camera}</div></div>
-      <div class="row"><em>要点</em><div>${p.tip}</div></div>
-      <div class="row"><em>适合<br>场景</em><div>${p.fit}</div></div>
+      <div class="row pose"><em>摆法</em><div>${p.pose}</div></div>
+      <div class="row cam"><em>机位</em><div>${p.camera}</div></div>
+      <div class="phone-box">
+        <div class="tilt">${tiltSvg(p.phone)}</div>
+        <div class="specs">
+          <b>手机这样拿、这样设</b>
+          <div class="spec-chips">
+            <span class="k">${p.phone.lens}</span>
+            <span>${p.phone.orient}</span>
+            <span>${tiltLabel(p.phone.tilt)}</span>
+            <span>${p.phone.mode}</span>
+            <span>${evLabel(p.phone.ev)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="row phone"><em>手机</em><div>${p.phone.note}</div></div>
+      <div class="row tip"><em>要点</em><div>${p.tip}</div></div>
+      <div class="row fit"><em>适合<br>场景</em><div>${p.fit}</div></div>
       <div class="actions">
         <button class="fav ${fav ? "on" : ""}" data-fav="${p.id}" aria-label="收藏">${fav ? "♥" : "♡"}</button>
         <button class="again" data-again>再抽一张</button>
