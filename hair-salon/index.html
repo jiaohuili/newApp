@@ -322,10 +322,10 @@ function face(expr) {
 
 function earsSvg(id, H) {
   switch (id) {
-    case "cat": return `<path d="M112 120 L118 58 L160 96 Z" fill="${H.base}"/><path d="M122 108 L124 74 L148 96 Z" fill="#f7b6c8"/>
-      <path d="M248 120 L242 58 L200 96 Z" fill="${H.base}"/><path d="M238 108 L236 74 L212 96 Z" fill="#f7b6c8"/>`;
-    case "fox": return `<path d="M108 124 L106 44 L162 96 Z" fill="${H.base}"/><path d="M106 44 L114 70 L124 62 Z" fill="#fff"/><path d="M118 110 L116 66 L148 96 Z" fill="#fff5ee"/>
-      <path d="M252 124 L254 44 L198 96 Z" fill="${H.base}"/><path d="M254 44 L246 70 L236 62 Z" fill="#fff"/><path d="M242 110 L244 66 L212 96 Z" fill="#fff5ee"/>`;
+    case "cat": return `<path d="M112 120 L118 58 L160 96 Z" fill="${H.base}" stroke="${H.dark}" stroke-width="3" stroke-linejoin="round"/><path d="M122 108 L124 74 L148 96 Z" fill="#f7b6c8"/>
+      <path d="M248 120 L242 58 L200 96 Z" fill="${H.base}" stroke="${H.dark}" stroke-width="3" stroke-linejoin="round"/><path d="M238 108 L236 74 L212 96 Z" fill="#f7b6c8"/>`;
+    case "fox": return `<path d="M108 124 L106 44 L162 96 Z" fill="${H.base}" stroke="${H.dark}" stroke-width="3" stroke-linejoin="round"/><path d="M106 44 L114 70 L124 62 Z" fill="#fff"/><path d="M118 110 L116 66 L148 96 Z" fill="#fff5ee"/>
+      <path d="M252 124 L254 44 L198 96 Z" fill="${H.base}" stroke="${H.dark}" stroke-width="3" stroke-linejoin="round"/><path d="M254 44 L246 70 L236 62 Z" fill="#fff"/><path d="M242 110 L244 66 L212 96 Z" fill="#fff5ee"/>`;
     case "bunny": return `<g transform="rotate(-12 150 96)"><ellipse cx="150" cy="40" rx="15" ry="52" fill="#fffaf8"/><ellipse cx="150" cy="44" rx="7" ry="40" fill="#f7b6c8"/></g>
       <g transform="rotate(18 210 96)"><ellipse cx="210" cy="40" rx="15" ry="52" fill="#fffaf8"/><ellipse cx="210" cy="44" rx="7" ry="40" fill="#f7b6c8"/><path d="M196 18 Q210 30 224 22" stroke="#efe1e5" stroke-width="3" fill="none"/></g>`;
     case "devil": return `<path d="M132 104 Q112 82 122 54 Q130 78 150 92 Z" fill="#5d3b5e"/><path d="M228 104 Q248 82 238 54 Q230 78 210 92 Z" fill="#5d3b5e"/>
@@ -365,7 +365,7 @@ function headbandSvg(id) {
   return "";
 }
 
-function bowSvg(id, x = 256, y = 96, s = 1) {
+function bowSvg(id, x = 266, y = 126, s = 1) {
   const styles = {
     red:    { a: "#e8505b", b: "#c63c47", knot: "#f07a83", tail: true },
     satin:  { a: "#f6b8c8", b: "#e993ab", knot: "#fbd3de", tail: true, long: true },
@@ -526,7 +526,7 @@ function renderPanel() {
 function itemPreview(cat, id) {
   const H = HAIR_COLORS[state.hair];
   const views = {
-    headband: "86 50 188 110", bow: "212 60 90 90", pin: "88 92 70 70", deco: { daisy: "214 92 60 60", strawberry: "244 138 56 56", chain: "100 80 160 100" }, ears: "90 10 180 130"
+    headband: "86 50 188 110", bow: "222 90 90 90", pin: "88 92 70 70", deco: { daisy: "214 92 60 60", strawberry: "244 138 56 56", chain: "100 80 160 100" }, ears: "90 10 180 130"
   };
   let vb = views[cat];
   if (typeof vb === "object") vb = vb[id];
